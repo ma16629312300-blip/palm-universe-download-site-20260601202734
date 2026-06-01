@@ -1,0 +1,4229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<title>掌中宇宙 Pro · Spell System</title>
+
+<style>
+:root{
+  --bg:#01030a;
+  --glass:rgba(8,12,30,.62);
+  --line:rgba(255,255,255,.16);
+  --text:rgba(255,255,255,.9);
+  --muted:rgba(255,255,255,.58);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  touch-action:none;
+  color:white;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+
+canvas{
+  display:block;
+}
+
+#intro{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at 48% 36%,rgba(70,185,255,.27),transparent 38%),
+    radial-gradient(circle at 70% 70%,rgba(160,70,255,.17),transparent 34%),
+    rgba(1,3,10,.88);
+  backdrop-filter:blur(18px);
+}
+
+.card{
+  width:min(92vw,560px);
+  padding:32px;
+  border-radius:34px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 30px 120px rgba(0,0,0,.56);
+  text-align:center;
+}
+
+.kicker{
+  display:inline-block;
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.08);
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.18em;
+}
+
+.card h1{
+  margin:18px 0 12px;
+  font-size:clamp(38px,9vw,76px);
+  line-height:.9;
+  letter-spacing:-.08em;
+  text-shadow:0 0 42px rgba(96,210,255,.5);
+}
+
+.card p{
+  margin:0 auto;
+  color:rgba(255,255,255,.7);
+  font-size:14px;
+  line-height:1.8;
+}
+
+.start-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:24px;
+}
+
+.primary,.secondary{
+  border:0;
+  border-radius:18px;
+  min-height:56px;
+  color:white;
+  font-weight:850;
+  font-size:15px;
+}
+
+.primary{
+  background:linear-gradient(135deg,#58e9ff,#8b5cff);
+  box-shadow:0 0 36px rgba(102,150,255,.58);
+}
+
+.secondary{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+}
+
+#title{
+  position:fixed;
+  left:20px;
+  top:18px;
+  z-index:20;
+  pointer-events:none;
+}
+
+#title .tag{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(12px);
+  color:rgba(255,255,255,.62);
+  font-size:11px;
+  letter-spacing:.16em;
+}
+
+#title h2{
+  margin:11px 0 0;
+  font-size:clamp(28px,6vw,56px);
+  line-height:.9;
+  letter-spacing:-.075em;
+  text-shadow:0 0 32px rgba(100,210,255,.54);
+}
+
+#status{
+  position:fixed;
+  left:50%;
+  top:18px;
+  transform:translateX(-50%);
+  z-index:26;
+  max-width:66vw;
+  padding:9px 15px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(14px);
+  color:rgba(255,255,255,.78);
+  font-size:12px;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#cam{
+  position:fixed;
+  right:12px;
+  top:12px;
+  width:108px;
+  height:142px;
+  object-fit:cover;
+  transform:scaleX(-1);
+  opacity:.22;
+  border-radius:18px;
+  z-index:24;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.06);
+}
+
+#hud{
+  position:fixed;
+  left:14px;
+  top:116px;
+  z-index:18;
+  min-width:166px;
+  padding:10px 12px;
+  color:rgba(255,255,255,.66);
+  font-size:11px;
+  line-height:1.72;
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(14px);
+  pointer-events:none;
+}
+
+#skillCard{
+  position:fixed;
+  left:50%;
+  top:72px;
+  transform:translateX(-50%);
+  z-index:25;
+  min-width:min(84vw,480px);
+  padding:14px 18px;
+  border-radius:22px;
+  text-align:center;
+  background:rgba(20,28,54,.62);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(18px);
+  box-shadow:0 20px 80px rgba(0,0,0,.28);
+  opacity:0;
+  translate:0 -16px;
+  transition:.35s ease;
+  pointer-events:none;
+}
+
+#skillCard.show{
+  opacity:1;
+  translate:0 0;
+}
+
+#skillCard .name{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:-.04em;
+  text-shadow:0 0 24px rgba(100,210,255,.55);
+}
+
+#skillCard .desc{
+  margin-top:5px;
+  color:rgba(255,255,255,.62);
+  font-size:12px;
+}
+
+#taskBox{
+  position:fixed;
+  left:14px;
+  bottom:20px;
+  z-index:22;
+  width:250px;
+  padding:14px;
+  border-radius:22px;
+  background:var(--glass);
+  border:1px solid var(--line);
+  backdrop-filter:blur(16px);
+  box-shadow:0 20px 80px rgba(0,0,0,.35);
+}
+
+#taskBox h3{
+  margin:0 0 8px;
+  font-size:14px;
+  letter-spacing:-.02em;
+}
+
+#taskBox p{
+  margin:0 0 10px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+.progress{
+  height:7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  overflow:hidden;
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#55e7ff,#8b5cff,#ffcf6b);
+  border-radius:999px;
+  transition:.3s ease;
+}
+
+#panels{
+  position:fixed;
+  left:50%;
+  bottom:16px;
+  transform:translateX(-50%);
+  z-index:26;
+  width:min(96vw,980px);
+  display:grid;
+  gap:8px;
+}
+
+.panel{
+  display:flex;
+  gap:7px;
+  justify-content:center;
+  flex-wrap:wrap;
+  padding:8px;
+  border-radius:20px;
+  background:rgba(8,12,30,.54);
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(16px);
+}
+
+.panel button,.tool{
+  border:1px solid rgba(255,255,255,.16);
+  color:white;
+  background:rgba(255,255,255,.09);
+  border-radius:999px;
+  padding:8px 11px;
+  font-size:11px;
+  backdrop-filter:blur(12px);
+}
+
+.panel button.active,.tool.active{
+  background:linear-gradient(135deg,#49e7ff,#8b5cff);
+  box-shadow:0 0 18px rgba(95,160,255,.45);
+}
+
+#settings{
+  position:fixed;
+  right:14px;
+  bottom:18px;
+  z-index:24;
+  width:245px;
+  padding:12px;
+  border-radius:22px;
+  background:var(--glass);
+  border:1px solid var(--line);
+  backdrop-filter:blur(16px);
+  box-shadow:0 20px 80px rgba(0,0,0,.35);
+}
+
+.setting{
+  margin-bottom:9px;
+}
+
+.setting:last-child{
+  margin-bottom:0;
+}
+
+.setting label{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:rgba(255,255,255,.72);
+  margin-bottom:4px;
+}
+
+input[type="range"]{
+  width:100%;
+  accent-color:#72e6ff;
+}
+
+#tools{
+  position:fixed;
+  right:14px;
+  top:168px;
+  z-index:24;
+  display:grid;
+  gap:8px;
+}
+
+#textBox{
+  position:fixed;
+  right:14px;
+  top:330px;
+  z-index:24;
+  width:210px;
+  padding:12px;
+  border-radius:18px;
+  background:var(--glass);
+  border:1px solid var(--line);
+  backdrop-filter:blur(16px);
+}
+
+#customText{
+  width:100%;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:12px;
+  padding:9px 10px;
+  color:white;
+  background:rgba(255,255,255,.08);
+  outline:none;
+}
+
+#applyText{
+  width:100%;
+  margin-top:8px;
+  border:0;
+  border-radius:12px;
+  padding:9px;
+  color:white;
+  font-weight:700;
+  background:linear-gradient(135deg,#49e7ff,#8b5cff);
+}
+
+.hidden{
+  display:none!important;
+}
+
+.immersive #panels,
+.immersive #settings,
+.immersive #hud,
+.immersive #cam,
+.immersive #title,
+.immersive #authorBadge,
+.immersive #taskBox,
+.immersive #tools,
+.immersive #textBox{
+  display:none!important;
+}
+
+@media(max-width:760px){
+  #title h2{display:none;}
+  #status{
+    top:12px;
+    max-width:76vw;
+    font-size:11px;
+  }
+  #skillCard{
+    top:56px;
+  }
+  #hud{
+    top:68px;
+    left:10px;
+    font-size:10px;
+  }
+  #cam{
+    width:80px;
+    height:106px;
+  }
+  #tools{
+    top:auto;
+    right:12px;
+    bottom:376px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    width:170px;
+  }
+  #textBox{
+    display:none;
+  }
+  #settings{
+    width:calc(100vw - 24px);
+    right:12px;
+    bottom:208px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 12px;
+  }
+  .setting{margin-bottom:0;}
+  #taskBox{
+    display:none;
+  }
+  #panels{
+    bottom:8px;
+  }
+  .panel{
+    gap:5px;
+    padding:6px;
+  }
+  .panel button{
+    padding:7px 8px;
+    font-size:10px;
+  }
+}
+
+#authorBadge{
+  position:fixed;
+  left:20px;
+  top:92px;
+  z-index:21;
+  padding:7px 12px;
+  border-radius:999px;
+  color:rgba(255,255,255,.68);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  font-size:11px;
+  pointer-events:none;
+}
+
+#guideModal{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:grid;
+  place-items:center;
+  background:rgba(1,3,10,.78);
+  backdrop-filter:blur(18px);
+}
+
+#guideModal.hidden{
+  display:none;
+}
+
+.guide-card{
+  width:min(92vw,760px);
+  max-height:82vh;
+  overflow:auto;
+  padding:26px;
+  border-radius:28px;
+  background:rgba(10,14,32,.86);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 30px 120px rgba(0,0,0,.58);
+}
+
+.guide-card h2{
+  margin:0 0 8px;
+  font-size:30px;
+  letter-spacing:-.05em;
+}
+
+.guide-card .byline{
+  margin-bottom:16px;
+  color:rgba(255,255,255,.58);
+  font-size:13px;
+}
+
+.guide-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.guide-item{
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.guide-item b{
+  display:block;
+  margin-bottom:4px;
+  font-size:13px;
+}
+
+.guide-item span{
+  color:rgba(255,255,255,.62);
+  font-size:12px;
+  line-height:1.55;
+}
+
+.guide-close{
+  margin-top:18px;
+  width:100%;
+  border:0;
+  border-radius:16px;
+  padding:13px 18px;
+  color:white;
+  font-weight:800;
+  background:linear-gradient(135deg,#49e7ff,#8b5cff);
+}
+
+@media(max-width:760px){
+  #authorBadge{
+    left:20px;
+    top:50px;
+  }
+
+  .guide-grid{
+    grid-template-columns:1fr;
+  }
+
+  .guide-card{
+    padding:20px;
+  }
+}
+
+
+/* === V2.1 interaction cleanup === */
+#tools{
+  width:220px;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+}
+
+#tools .tool{
+  text-align:center;
+  min-width:0;
+}
+
+#textBox{
+  top:430px;
+  width:220px;
+}
+
+#gestureLock{
+  position:fixed;
+  left:50%;
+  top:122px;
+  transform:translateX(-50%);
+  z-index:24;
+  padding:8px 14px;
+  border-radius:999px;
+  color:rgba(255,255,255,.82);
+  background:rgba(80,160,255,.16);
+  border:1px solid rgba(110,220,255,.22);
+  backdrop-filter:blur(14px);
+  font-size:12px;
+  pointer-events:none;
+}
+
+#customText{
+  font-weight:800;
+}
+
+.immersive #gestureLock,
+.immersive #textBox{
+  display:none!important;
+}
+
+@media(max-width:760px){
+  #tools{
+    width:190px;
+    bottom:380px;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* === V2.2 精准识别 + 沉浸退出修复 === */
+#exitImmersive{
+  position:fixed;
+  right:18px;
+  top:18px;
+  z-index:200;
+  display:none;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  padding:10px 16px;
+  color:white;
+  font-size:13px;
+  font-weight:800;
+  background:linear-gradient(135deg,rgba(73,231,255,.86),rgba(139,92,255,.86));
+  backdrop-filter:blur(14px);
+  box-shadow:0 0 30px rgba(90,170,255,.45);
+}
+
+.immersive #exitImmersive{
+  display:block!important;
+}
+
+#precisionBadge{
+  position:fixed;
+  left:50%;
+  top:160px;
+  transform:translateX(-50%);
+  z-index:24;
+  padding:7px 12px;
+  border-radius:999px;
+  color:rgba(255,255,255,.74);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  font-size:11px;
+  pointer-events:none;
+}
+
+.immersive #precisionBadge{
+  display:none!important;
+}
+
+#textBox{
+  top:462px;
+}
+
+@media(max-width:760px){
+  #exitImmersive{
+    right:12px;
+    top:12px;
+    padding:9px 13px;
+    font-size:12px;
+  }
+
+  #precisionBadge{
+    top:92px;
+    max-width:82vw;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
+
+
+/* === V2.4 识别优化 + 比心彩蛋 === */
+#easterEggText{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.92);
+  z-index:180;
+  color:white;
+  font-size:clamp(34px,8vw,86px);
+  font-weight:950;
+  letter-spacing:-.08em;
+  text-align:center;
+  text-shadow:
+    0 0 18px rgba(255,120,190,.9),
+    0 0 52px rgba(255,80,170,.62),
+    0 0 90px rgba(120,210,255,.48);
+  opacity:0;
+  pointer-events:none;
+  transition:.45s ease;
+}
+
+#easterEggText.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+.floatHeart{
+  position:fixed;
+  z-index:179;
+  pointer-events:none;
+  color:#ff6fb7;
+  font-size:22px;
+  opacity:.95;
+  text-shadow:0 0 18px rgba(255,100,180,.9);
+  animation:heartFloat 2.6s ease-out forwards;
+}
+
+@keyframes heartFloat{
+  0%{transform:translate(0,0) scale(.6) rotate(0deg);opacity:0;}
+  15%{opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) scale(1.35) rotate(var(--rot));opacity:0;}
+}
+
+
+/* === V3.3 画质增强控件 === */
+@media(max-width:760px){
+  #settings{
+    grid-template-columns:1fr 1fr;
+    bottom:212px;
+    max-height:38vh;
+    overflow:auto;
+  }
+}
+
+
+/* === Birthday Reward Mechanism === */
+#birthdayBox{
+  position:fixed;
+  right:14px;
+  top:590px;
+  z-index:24;
+  width:220px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(8,12,30,.62);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(16px);
+}
+
+#birthdayBox .birth-title{
+  color:rgba(255,255,255,.82);
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+
+#birthdayBox .birth-tip{
+  color:rgba(255,255,255,.52);
+  font-size:11px;
+  margin-bottom:8px;
+}
+
+#birthdayInput{
+  width:100%;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:12px;
+  padding:9px 10px;
+  color:white;
+  background:rgba(255,255,255,.08);
+  outline:none;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+
+#birthdayBtn{
+  width:100%;
+  margin-top:8px;
+  border:0;
+  border-radius:12px;
+  padding:9px;
+  color:white;
+  font-weight:800;
+  background:linear-gradient(135deg,#6be7ff,#8b5cff);
+}
+
+#birthdayMsg{
+  margin-top:7px;
+  color:rgba(255,255,255,.62);
+  font-size:11px;
+  min-height:16px;
+}
+
+#rewardBanner{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.9);
+  z-index:190;
+  opacity:0;
+  pointer-events:none;
+  text-align:center;
+  transition:.55s ease;
+}
+
+#rewardBanner.show{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+}
+
+#rewardBanner .reward-main{
+  font-size:clamp(36px,9vw,92px);
+  font-weight:950;
+  letter-spacing:-.08em;
+  color:white;
+  text-shadow:
+    0 0 18px rgba(150,220,255,.95),
+    0 0 54px rgba(110,180,255,.68),
+    0 0 90px rgba(255,220,130,.5);
+}
+
+#rewardBanner .reward-sub{
+  margin-top:8px;
+  color:rgba(255,255,255,.7);
+  font-size:14px;
+  letter-spacing:.18em;
+}
+
+.rewardSpark{
+  position:fixed;
+  z-index:188;
+  pointer-events:none;
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:white;
+  box-shadow:0 0 18px currentColor,0 0 36px currentColor;
+  animation:rewardSpark 1.8s ease-out forwards;
+}
+
+@keyframes rewardSpark{
+  0%{
+    transform:translate(0,0) scale(.4);
+    opacity:0;
+  }
+  12%{
+    opacity:1;
+  }
+  100%{
+    transform:translate(var(--dx),var(--dy)) scale(.1);
+    opacity:0;
+  }
+}
+
+.immersive #birthdayBox{
+  display:none!important;
+}
+
+@media(max-width:760px){
+  #birthdayBox{
+    display:none;
+  }
+}
+
+
+/* === Birthday modal visibility fix === */
+#birthdayModal{
+  position:fixed;
+  inset:0;
+  z-index:210;
+  display:none;
+  place-items:center;
+  background:rgba(1,3,10,.78);
+  backdrop-filter:blur(18px);
+}
+
+#birthdayModal.show{
+  display:grid;
+}
+
+.birthday-card{
+  width:min(92vw,430px);
+  padding:24px;
+  border-radius:28px;
+  background:rgba(10,14,32,.88);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 30px 120px rgba(0,0,0,.58);
+}
+
+.birthday-card h2{
+  margin:0 0 8px;
+  font-size:28px;
+  letter-spacing:-.05em;
+}
+
+.birthday-card p{
+  margin:0 0 14px;
+  color:rgba(255,255,255,.62);
+  font-size:13px;
+  line-height:1.7;
+}
+
+#birthdayInputModal{
+  width:100%;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  padding:13px 14px;
+  color:white;
+  background:rgba(255,255,255,.09);
+  outline:none;
+  font-weight:900;
+  letter-spacing:.12em;
+  font-size:16px;
+}
+
+.birthday-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.birthday-actions button{
+  border:0;
+  border-radius:14px;
+  padding:12px;
+  color:white;
+  font-weight:850;
+}
+
+#birthdaySubmitModal{
+  background:linear-gradient(135deg,#6be7ff,#8b5cff);
+}
+
+#birthdayCloseModal{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.16);
+}
+
+#birthdayMsgModal{
+  margin-top:10px;
+  min-height:18px;
+  color:rgba(255,255,255,.66);
+  font-size:12px;
+}
+
+@media(max-width:760px){
+  #birthdayBox{
+    display:none!important;
+  }
+}
+
+
+/* === Fullscreen Starry Night Firework Reward === */
+.screenFirework{
+  position:fixed;
+  left:50%;
+  top:50%;
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  z-index:189;
+  pointer-events:none;
+  background:currentColor;
+  color:white;
+  box-shadow:
+    0 0 18px currentColor,
+    0 0 42px currentColor,
+    0 0 80px currentColor;
+  animation:screenFirework var(--dur) cubic-bezier(.12,.72,.16,1) forwards;
+}
+
+@keyframes screenFirework{
+  0%{
+    transform:translate(-50%,-50%) scale(.2);
+    opacity:0;
+  }
+  8%{
+    opacity:1;
+  }
+  70%{
+    opacity:1;
+  }
+  100%{
+    transform:
+      translate(
+        calc(-50% + var(--dx)),
+        calc(-50% + var(--dy))
+      )
+      scale(.05);
+    opacity:0;
+  }
+}
+
+.fireworkRing{
+  position:fixed;
+  left:50%;
+  top:50%;
+  width:20px;
+  height:20px;
+  z-index:187;
+  pointer-events:none;
+  border-radius:999px;
+  border:2px solid rgba(130,210,255,.78);
+  box-shadow:
+    0 0 24px rgba(130,210,255,.8),
+    inset 0 0 18px rgba(255,210,90,.35);
+  animation:fireworkRing 1.5s ease-out forwards;
+}
+
+@keyframes fireworkRing{
+  0%{
+    transform:translate(-50%,-50%) scale(.1);
+    opacity:0;
+  }
+  12%{
+    opacity:1;
+  }
+  100%{
+    transform:translate(-50%,-50%) scale(var(--ringScale));
+    opacity:0;
+  }
+}
+
+#rewardBanner .reward-main{
+  background:linear-gradient(90deg,#ffe56d,#6be7ff,#5d7dff,#fff3a0);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+
+/* === Text Particle Modal Visibility Fix === */
+#textModal{
+  position:fixed;
+  inset:0;
+  z-index:212;
+  display:none;
+  place-items:center;
+  background:rgba(1,3,10,.78);
+  backdrop-filter:blur(18px);
+}
+
+#textModal.show{
+  display:grid;
+}
+
+.text-card{
+  width:min(92vw,430px);
+  padding:24px;
+  border-radius:28px;
+  background:rgba(10,14,32,.88);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 30px 120px rgba(0,0,0,.58);
+}
+
+.text-card h2{
+  margin:0 0 8px;
+  font-size:28px;
+  letter-spacing:-.05em;
+}
+
+.text-card p{
+  margin:0 0 14px;
+  color:rgba(255,255,255,.62);
+  font-size:13px;
+  line-height:1.7;
+}
+
+#customTextModal{
+  width:100%;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  padding:13px 14px;
+  color:white;
+  background:rgba(255,255,255,.09);
+  outline:none;
+  font-weight:900;
+  font-size:16px;
+}
+
+.text-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.text-actions button{
+  border:0;
+  border-radius:14px;
+  padding:12px;
+  color:white;
+  font-weight:850;
+}
+
+#textSubmitModal{
+  background:linear-gradient(135deg,#6be7ff,#8b5cff);
+}
+
+#textCloseModal{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.16);
+}
+
+#textMsgModal{
+  margin-top:10px;
+  min-height:18px;
+  color:rgba(255,255,255,.66);
+  font-size:12px;
+}
+
+@media(max-width:760px){
+  #textBox{
+    display:none!important;
+  }
+}
+
+
+.iteration-badge{
+  display:inline-block;
+  margin-top:14px;
+  padding:8px 14px;
+  border-radius:999px;
+  color:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  font-size:12px;
+  letter-spacing:.08em;
+}
+
+
+/* === Mobile Collapsible UI V33 === */
+#uiToggle{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  z-index:260;
+  display:none;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  padding:12px 18px;
+  color:white;
+  font-weight:900;
+  font-size:13px;
+  background:linear-gradient(135deg,rgba(73,231,255,.92),rgba(139,92,255,.92));
+  backdrop-filter:blur(16px);
+  box-shadow:0 0 30px rgba(90,170,255,.48);
+}
+
+#uiCollapseMask{
+  position:fixed;
+  inset:0;
+  z-index:219;
+  display:none;
+  background:rgba(1,3,10,.22);
+  backdrop-filter:blur(2px);
+}
+
+.mobile-ui-collapsed #panels,
+.mobile-ui-collapsed #settings,
+.mobile-ui-collapsed #tools,
+.mobile-ui-collapsed #textBox,
+.mobile-ui-collapsed #birthdayBox,
+.mobile-ui-collapsed #taskBox,
+.mobile-ui-collapsed #hud,
+.mobile-ui-collapsed #cam{
+  display:none!important;
+}
+
+.mobile-ui-expanded #uiCollapseMask{
+  display:block;
+}
+
+.mobile-ui-expanded #panels,
+.mobile-ui-expanded #settings,
+.mobile-ui-expanded #tools{
+  z-index:240;
+}
+
+.mobile-ui-expanded #uiToggle{
+  bottom:10px;
+}
+
+@media(max-width:760px){
+  #uiToggle{
+    display:block;
+  }
+
+  body:not(.mobile-ui-expanded) #panels,
+  body:not(.mobile-ui-expanded) #settings,
+  body:not(.mobile-ui-expanded) #tools,
+  body:not(.mobile-ui-expanded) #textBox,
+  body:not(.mobile-ui-expanded) #birthdayBox,
+  body:not(.mobile-ui-expanded) #taskBox,
+  body:not(.mobile-ui-expanded) #hud,
+  body:not(.mobile-ui-expanded) #cam{
+    display:none!important;
+  }
+
+  body.mobile-ui-expanded #tools{
+    display:grid;
+    position:fixed;
+    left:12px;
+    right:12px;
+    top:auto;
+    bottom:74px;
+    width:auto;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    z-index:245;
+  }
+
+  body.mobile-ui-expanded #tools .tool{
+    min-height:40px;
+    padding:8px 6px;
+    font-size:11px;
+  }
+
+  body.mobile-ui-expanded #settings{
+    display:grid;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:258px;
+    width:auto;
+    max-height:32vh;
+    overflow:auto;
+    grid-template-columns:1fr 1fr;
+    gap:8px 12px;
+    padding:12px;
+    z-index:244;
+  }
+
+  body.mobile-ui-expanded #panels{
+    display:grid;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:124px;
+    transform:none;
+    width:auto;
+    gap:7px;
+    z-index:243;
+  }
+
+  body.mobile-ui-expanded .panel{
+    max-height:64px;
+    overflow:auto;
+    justify-content:flex-start;
+    flex-wrap:nowrap;
+    padding:7px;
+    border-radius:16px;
+  }
+
+  body.mobile-ui-expanded .panel button{
+    flex:0 0 auto;
+    white-space:nowrap;
+    padding:8px 10px;
+    font-size:10px;
+  }
+
+  body.mobile-ui-expanded #hud{
+    display:block;
+    left:12px;
+    top:78px;
+    max-width:185px;
+    z-index:242;
+  }
+
+  body.mobile-ui-expanded #cam{
+    display:block;
+    right:12px;
+    top:78px;
+    width:78px;
+    height:104px;
+    z-index:242;
+  }
+
+  body.mobile-ui-expanded #status{
+    max-width:82vw;
+  }
+
+  body.mobile-ui-expanded #title,
+  body.mobile-ui-collapsed #title{
+    pointer-events:none;
+  }
+
+  body.mobile-ui-collapsed #status{
+    top:12px;
+    max-width:82vw;
+  }
+
+  body.mobile-ui-collapsed #gestureLock,
+  body.mobile-ui-collapsed #precisionBadge,
+  body.mobile-ui-collapsed #authorBadge{
+    opacity:.58;
+  }
+
+  .immersive #uiToggle,
+  .immersive #uiCollapseMask{
+    display:none!important;
+  }
+}
+
+
+/* === Section Collapsible UI V33 === */
+.ui-section{
+  position:relative;
+}
+
+.ui-section-header{
+  display:none;
+}
+
+@media(max-width:760px){
+  body.mobile-ui-expanded #panels{
+    display:block;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:124px;
+    transform:none;
+    width:auto;
+    z-index:243;
+    max-height:34vh;
+    overflow:auto;
+    padding-right:2px;
+  }
+
+  body.mobile-ui-expanded .ui-section{
+    margin-bottom:7px;
+    border-radius:18px;
+    background:rgba(8,12,30,.54);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);
+    overflow:hidden;
+  }
+
+  body.mobile-ui-expanded .ui-section-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    border:0;
+    color:white;
+    background:rgba(255,255,255,.08);
+    padding:9px 11px;
+    font-size:12px;
+    font-weight:850;
+    letter-spacing:.02em;
+  }
+
+  body.mobile-ui-expanded .ui-section-header span{
+    color:rgba(255,255,255,.62);
+    font-size:11px;
+    font-weight:700;
+  }
+
+  body.mobile-ui-expanded .ui-section-content{
+    padding:7px;
+  }
+
+  body.mobile-ui-expanded .ui-section.collapsed .ui-section-content{
+    display:none!important;
+  }
+
+  body.mobile-ui-expanded .ui-section.collapsed .ui-section-header span::after{
+    content:"展开";
+  }
+
+  body.mobile-ui-expanded .ui-section:not(.collapsed) .ui-section-header span::after{
+    content:"收起";
+  }
+
+  body.mobile-ui-expanded .panel{
+    max-height:70px;
+    overflow:auto;
+    justify-content:flex-start;
+    flex-wrap:nowrap;
+    padding:0;
+    border:0;
+    background:transparent;
+    backdrop-filter:none;
+  }
+
+  body.mobile-ui-expanded .panel button{
+    flex:0 0 auto;
+    white-space:nowrap;
+    padding:8px 10px;
+    font-size:10px;
+  }
+
+  body.mobile-ui-expanded #tools{
+    display:block;
+    position:fixed;
+    left:12px;
+    right:12px;
+    top:auto;
+    bottom:74px;
+    width:auto;
+    z-index:245;
+    border-radius:18px;
+    background:rgba(8,12,30,.54);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);
+    overflow:hidden;
+  }
+
+  body.mobile-ui-expanded #tools.ui-section .ui-section-content{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    padding:8px;
+  }
+
+  body.mobile-ui-expanded #tools.ui-section.collapsed .ui-section-content{
+    display:none!important;
+  }
+
+  body.mobile-ui-expanded #tools .tool{
+    min-height:40px;
+    padding:8px 6px;
+    font-size:11px;
+    text-align:center;
+  }
+
+  body.mobile-ui-expanded #settings{
+    display:block;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:258px;
+    width:auto;
+    max-height:32vh;
+    overflow:auto;
+    padding:0;
+    z-index:244;
+    border-radius:18px;
+    background:rgba(8,12,30,.54);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(16px);
+  }
+
+  body.mobile-ui-expanded #settings .ui-section-content{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 12px;
+    padding:12px;
+  }
+
+  body.mobile-ui-expanded #settings.ui-section.collapsed .ui-section-content{
+    display:none!important;
+  }
+
+  body.mobile-ui-expanded #hud{
+    display:block;
+    left:12px;
+    top:78px;
+    max-width:185px;
+    z-index:242;
+  }
+
+  body.mobile-ui-expanded #hud.ui-section{
+    background:rgba(8,12,30,.54);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;
+    overflow:hidden;
+    padding:0;
+  }
+
+  body.mobile-ui-expanded #hud .ui-section-content{
+    padding:10px 12px;
+  }
+
+  body.mobile-ui-expanded #hud.ui-section.collapsed .ui-section-content{
+    display:none!important;
+  }
+
+  body.mobile-ui-expanded #hud .ui-section-header{
+    display:flex;
+  }
+
+  body.mobile-ui-expanded #cam{
+    top:78px;
+  }
+
+  .ui-mini-row{
+    display:flex;
+    gap:7px;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:58px;
+    z-index:246;
+    overflow:auto;
+    padding-bottom:2px;
+  }
+
+  body:not(.mobile-ui-expanded) .ui-mini-row,
+  body.mobile-ui-collapsed .ui-mini-row,
+  .immersive .ui-mini-row{
+    display:none!important;
+  }
+
+  .ui-mini-row button{
+    flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.14);
+    color:white;
+    background:rgba(255,255,255,.08);
+    border-radius:999px;
+    padding:7px 10px;
+    font-size:10px;
+    backdrop-filter:blur(12px);
+  }
+}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+
+<body class="mobile-ui-collapsed">
+<button id="uiToggle">展开控制面板</button>
+<div id="uiCollapseMask"></div>
+<div id="uiMiniRow" class="ui-mini-row"></div>
+<button id="exitImmersive">退出沉浸</button>
+<div id="precisionBadge">识别模式：五指纯时停 / 仅远近缩放 + 双手张开星门 + 距离缩放</div>
+
+
+<div id="birthdayModal">
+  <div class="birthday-card">
+    <h2>作者生日挑战</h2>
+    <p>请输入作者生日，只输入数字。答对后会解锁梵高星空粒子，并以烟花般炸开的方式绽放。</p>
+    <input id="birthdayInputModal" inputmode="numeric" maxlength="8" placeholder="只输入数字，例如 20000101" />
+    <div class="birthday-actions">
+      <button id="birthdaySubmitModal">解锁奖励</button>
+      <button id="birthdayCloseModal">关闭</button>
+    </div>
+    <div id="birthdayMsgModal"></div>
+  </div>
+</div>
+
+
+
+<div id="textModal">
+  <div class="text-card">
+    <h2>自定义文字粒子</h2>
+    <p>输入文字后，粒子会按文字轮廓重新排列。建议 2～8 个字效果最好。</p>
+    <input id="customTextModal" maxlength="12" placeholder="例如：星辰 / LOVE / zuyao" />
+    <div class="text-actions">
+      <button id="textSubmitModal">生成文字</button>
+      <button id="textCloseModal">关闭</button>
+    </div>
+    <div id="textMsgModal"></div>
+  </div>
+</div>
+
+
+<div id="intro">
+  <div class="card">
+    <div class="kicker">PALM UNIVERSE SPELL SYSTEM</div>
+    <h1>掌中宇宙 Pro</h1>
+    <p>新增单手手势技能、轨迹绘制、星座能量网、音乐响应、小游戏、电影级后期、形态进化和自定义文字。</p>
+    <div class="iteration-badge">已迭代 33 次 · V33</div>
+    <div class="start-row">
+      <button class="primary" id="startCamera">开启手势宇宙</button>
+      <button class="secondary" id="startNoCamera">直接进入</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="guideModal" class="hidden">
+  <div class="guide-card">
+    <h2>手势玩法说明书</h2>
+    <div class="byline">《掌中宇宙 Pro》｜作者：zuyao</div>
+
+    <div class="guide-grid">
+      <div class="guide-item"><b>食指移动</b><span>精准旋转粒子宇宙。食指画圈可生成星环 / 传送门。</span></div>
+      <div class="guide-item"><b>食指画轨迹</b><span>画圆生成星门，画爱心生成爱心，画 S 生成螺旋星河，画星形生成星座能量网。</span></div>
+      <div class="guide-item"><b>双指</b><span>触发星波扩散和双星分裂特效，不破坏当前形状。</span></div>
+      <div class="guide-item"><b>三指</b><span>触发三重星环震荡，形成更明显的轨道波纹。</span></div>
+      <div class="guide-item"><b>握拳后张开</b><span>先握拳蓄力，再张开手掌释放超新星爆炸。</span></div>
+      <div class="guide-item"><b>捏合手势</b><span>拇指和食指靠近即可触发黑洞/核心坍缩，比 OK 手势更稳定。</span></div>
+      
+      <div class="guide-item"><b>五指张开停住</b><span>进入时停，粒子冻结并出现全屏闪光。</span></div>
+      
+      
+      <div class="guide-item"><b>双手张开</b><span>比单手四指更稳定：两只手同时张开时触发星门 / 虫洞特效。</span></div>
+      <div class="guide-item"><b>五指张开</b><span>时停 + 全屏闪光；握拳后五指张开可释放超新星。</span></div>
+      
+      <div class="guide-item"><b>握拳后张开</b><span>单手蓄力后释放超新星爆发。</span></div>
+      <div class="guide-item"><b>隐藏彩蛋</b><span>连续 3 次完成“握拳蓄力 → 五指张开爆发”，触发文字“马跳感谢你游玩”和漂浮爱心。</span></div>
+      <div class="guide-item"><b>自定义文字</b><span>点击右侧“文字粒子”按钮，输入文字后即可按真实文字轮廓生成。</span></div>
+    </div>
+
+    <button class="guide-close" id="closeGuide">开始创造宇宙</button>
+  </div>
+</div>
+
+
+<div id="title">
+  <div class="tag">HAND GENESIS</div>
+  <h2>掌中宇宙<br>Pro</h2>
+</div>
+
+<div id="status">准备生成宇宙</div>
+<div id="easterEggText">马跳感谢你游玩</div>
+<div id="authorBadge">作者：zuyao</div>
+
+<div id="gestureLock">识别模式：五指纯时停 / 仅远近缩放</div>
+
+<div id="skillCard">
+  <div class="name">技能释放</div>
+  <div class="desc">Gesture Spell</div>
+</div>
+
+<div id="hud">
+  手势：待机<br>
+  技能：无<br>
+  
+  音量：--
+</div>
+
+<div id="taskBox">
+  <h3>任务：星球孵化</h3>
+  <p id="taskDesc">捏合压缩核心，张掌释放能量，完成星体生成。</p>
+  <div class="progress"><span id="taskProgress"></span></div>
+</div>
+
+<video id="cam" playsinline muted></video>
+
+<div id="tools">
+  <button class="tool" id="musicBtn">音乐响应</button>
+  <button class="tool" id="evolveBtn">形态进化</button>
+  <button class="tool" id="gameBtn">任务玩法</button>
+  <button class="tool active" id="lineBtn">能量网</button>
+  <button class="tool" id="shotBtn">截图</button>
+  <button class="tool" id="fullBtn">沉浸</button>
+  <button class="tool" id="guideBtn">玩法说明</button>
+  <button class="tool" id="birthdayOpenBtn">生日彩蛋</button>
+  <button class="tool" id="textOpenBtn">文字粒子</button>
+  <button class="tool" id="calibrateBtn">校准识别</button>
+</div>
+
+<div id="textBox">
+  <input id="customText" placeholder="输入文字，如 星辰 / LOVE" value="星辰" />
+  <button id="applyText">生成文字粒子</button>
+</div>
+
+<div id="birthdayBox">
+  <div class="birth-title">作者生日挑战</div>
+  <div class="birth-tip">请输入作者生日，只输入数字</div>
+  <input id="birthdayInput" inputmode="numeric" maxlength="8" placeholder="例如：20000101" />
+  <button id="birthdayBtn">解锁奖励</button>
+  <div id="birthdayMsg"></div>
+</div>
+
+<div id="rewardBanner">
+  <div class="reward-main">梵高星空</div>
+  <div class="reward-sub">STARRY NIGHT REWARD UNLOCKED</div>
+</div>
+
+<div id="settings">
+  <div class="setting">
+    <label>粒子数量 <span id="countVal">17000</span></label>
+    <input id="countRange" type="range" min="5000" max="30000" step="1000" value="17000">
+  </div>
+  <div class="setting">
+    <label>粒子大小 <span id="sizeVal">1.0</span></label>
+    <input id="sizeRange" type="range" min="0.5" max="3.0" step="0.1" value="1.0">
+  </div>
+  <div class="setting">
+    <label>星光强度 <span id="glowVal">1.4</span></label>
+    <input id="glowRange" type="range" min="0.5" max="3.5" step="0.1" value="1.4">
+  </div>
+  <div class="setting">
+    <label>物理强度 <span id="physicsVal">1.2</span></label>
+    <input id="physicsRange" type="range" min="0.4" max="3.0" step="0.1" value="1.2">
+  </div>
+  <div class="setting">
+    <label>连线强度 <span id="lineVal">1.0</span></label>
+    <input id="lineRange" type="range" min="0" max="2" step="0.1" value="1.0">
+  </div>
+  <div class="setting">
+    <label>拖尾残影 <span id="trailVal">0.18</span></label>
+    <input id="trailRange" type="range" min="0" max="0.5" step="0.02" value="0.18">
+  </div>
+  <div class="setting">
+    <label>质量模式 <span id="qualityVal">高</span></label>
+    <input id="qualityRange" type="range" min="1" max="3" step="1" value="2">
+  </div>
+  <div class="setting">
+    <label>渲染清晰度 <span id="renderScaleVal">1.5</span></label>
+    <input id="renderScaleRange" type="range" min="1" max="2.5" step="0.1" value="1.5">
+  </div>
+  <div class="setting">
+    <label>星光锐度 <span id="sharpVal">1.2</span></label>
+    <input id="sharpRange" type="range" min="0.6" max="2.4" step="0.1" value="1.2">
+  </div>
+  <div class="setting">
+    <label>线网密度 <span id="lineDensityVal">1.0</span></label>
+    <input id="lineDensityRange" type="range" min="0.3" max="2.0" step="0.1" value="1.0">
+  </div>
+</div>
+
+<div id="panels">
+  <div class="panel" id="effectPanel">
+    <button class="active" data-effect="auto">自动施法</button>
+    <button data-effect="freeze">时停</button>
+    <button data-effect="swirl">旋涡</button>
+    <button data-effect="wave">星波</button>
+    <button data-effect="collapse">坍缩</button>
+    <button data-effect="nova">爆发</button>
+    <button data-effect="portal">星门</button>
+  </div>
+
+  <div class="panel" id="themePanel">
+    <button class="active" data-theme="cyan">青蓝</button>
+    <button data-theme="rainbow">彩虹</button>
+    <button data-theme="purple">紫粉</button>
+    <button data-theme="gold">金色</button>
+    <button data-theme="fire">烈焰</button>
+    <button data-theme="ice">冰晶</button>
+    <button data-theme="green">翡翠</button>
+    <button data-theme="redblue">红蓝</button>
+  </div>
+
+  <div class="panel" id="shapePanel">
+    <button class="active" data-shape="planet">星球</button>
+    <button data-shape="saturn">土星</button>
+    <button data-shape="galaxy">银河</button>
+    <button data-shape="blackhole">黑洞</button>
+    <button data-shape="dna">DNA</button>
+    <button data-shape="heart">爱心</button>
+    <button data-shape="flower">花朵</button>
+    <button data-shape="phoenix">凤凰</button>
+    <button data-shape="dragon">龙形</button>
+    <button data-shape="text">文字</button>
+  </div>
+</div>
+
+<script>
+const intro=document.getElementById("intro");
+const statusEl=document.getElementById("status");
+const video=document.getElementById("cam");
+const hud=document.getElementById("hud");
+const gestureLock=document.getElementById("gestureLock");
+const precisionBadge=document.getElementById("precisionBadge");
+const skillCard=document.getElementById("skillCard");
+const taskProgress=document.getElementById("taskProgress");
+const taskDesc=document.getElementById("taskDesc");
+
+const countRange=document.getElementById("countRange");
+const sizeRange=document.getElementById("sizeRange");
+const glowRange=document.getElementById("glowRange");
+const physicsRange=document.getElementById("physicsRange");
+const lineRange=document.getElementById("lineRange");
+const trailRange=document.getElementById("trailRange");
+const qualityRange=document.getElementById("qualityRange");
+const renderScaleRange=document.getElementById("renderScaleRange");
+const sharpRange=document.getElementById("sharpRange");
+const lineDensityRange=document.getElementById("lineDensityRange");
+
+const countVal=document.getElementById("countVal");
+const sizeVal=document.getElementById("sizeVal");
+const glowVal=document.getElementById("glowVal");
+const physicsVal=document.getElementById("physicsVal");
+const lineVal=document.getElementById("lineVal");
+const trailVal=document.getElementById("trailVal");
+const qualityVal=document.getElementById("qualityVal");
+const renderScaleVal=document.getElementById("renderScaleVal");
+const sharpVal=document.getElementById("sharpVal");
+const lineDensityVal=document.getElementById("lineDensityVal");
+
+let scene,camera,renderer,group,particles,geometry,material;
+let lineGroup,lineGeometry,lineMaterial,starBg,trailLine,trailGeometry,trailMaterial;
+let postScene,postCamera,postMesh,postMaterial,rtA,rtB;
+let pos,base,vel,color,size,twinkle;
+
+let maxCount=30000;
+let activeCount=17000;
+let time=0;
+let currentShape="planet";
+let currentTheme="cyan";
+let selectedEffect="auto";
+let connectionMode="energy";
+
+let particleSizeScale=1.0;
+let glowStrength=1.4;
+let physicsStrength=1.2;
+let lineStrength=1.0;
+let trailAlpha=.18;
+let qualityMode=2;
+let renderScale=1.5;
+let starSharpness=1.2;
+let lineDensity=1.0;
+let birthdayRewardUnlocked=false;
+let landscapeFireworkTimer=null;
+
+let targetRotX=0,targetRotY=0,targetRotZ=0;
+let targetZoom=1040,targetScale=.38;
+let screenShake=0,flash=0;
+
+let focusPower=0,freezePower=0,swirlPower=0,wavePower=0,collapsePower=0,portalPower=0,cutPower=0;
+let musicLevel=0,musicBass=0,musicHigh=0;
+let analyser=null,audioData=null;
+
+let smoothX=.5,smoothY=.5,lastFingerX=.5,lastFingerY=.5;
+let pointerTrail=[];
+let lastExplode=0,lastGesture="",lastRawGesture="idle";
+let fistArmed=false,openHoldFrames=0,gameProgress=0,gameEnabled=false;
+let gestureHistory=[];
+let palmMin=999,palmMax=0,palmSmooth=0;
+let lockedGesture="idle";
+let pendingGesture="idle";
+let pendingFrames=0;
+let gestureLockedUntil=0;
+let oneFingerStartedAt=0;
+let lastTrailDetectAt=0;
+let openPalmStartedAt=0;
+let textParticleCache=[];
+let textParticleKey="";
+let stableGestureState="idle";
+let stableCandidate="idle";
+let stableCandidateFrames=0;
+let lastStableChange=0;
+let smoothedHands=[];
+let lastRecognizedHands=[];
+let landmarkSmoothAlpha=.58;
+let recognitionDebug={raw:"idle",stable:"idle",confidence:0};
+let lastHeartEgg=0;
+let heartEggActiveUntil=0;
+let novaComboCount=0;
+let lastNovaComboAt=0;
+
+const HISTORY_LEN=6;
+const shapeOrder=["dust","planet","saturn","galaxy","blackhole","nova","phoenix","dragon","text"];
+
+init();
+animate();
+
+function init(){
+  scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x01030a,.0026);
+
+  camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,3800);
+  camera.position.z=1040;
+
+  renderer=new THREE.WebGLRenderer({
+    antialias:true,
+    alpha:false,
+    preserveDrawingBuffer:true,
+    powerPreference:"high-performance"
+  });
+
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setClearColor(0x01030a,1);
+  renderer.autoClear=false;
+  document.body.appendChild(renderer.domElement);
+
+  group=new THREE.Group();
+  group.scale.set(.38,.38,.38);
+  scene.add(group);
+
+  createParticles(maxCount);
+  createConstellation();
+  createTrailLine();
+  createBackgroundStars();
+  createPostFX();
+
+  scene.add(new THREE.PointLight(0x66eaff,4.4,1800));
+  scene.add(new THREE.PointLight(0x8b5cff,3.4,1400));
+  scene.add(new THREE.PointLight(0xffcc66,2.2,1400));
+  scene.add(new THREE.AmbientLight(0x223366,1.55));
+
+  setShape("planet",true);
+}
+
+function createParticles(total){
+  geometry=new THREE.BufferGeometry();
+
+  pos=new Float32Array(total*3);
+  base=new Float32Array(total*3);
+  vel=new Float32Array(total*3);
+  color=new Float32Array(total*3);
+  size=new Float32Array(total);
+  twinkle=new Float32Array(total);
+
+  for(let i=0;i<total;i++){
+    const i3=i*3;
+    pos[i3]=base[i3]=0;
+    pos[i3+1]=base[i3+1]=0;
+    pos[i3+2]=base[i3+2]=0;
+    vel[i3]=(Math.random()-.5)*.03;
+    vel[i3+1]=(Math.random()-.5)*.03;
+    vel[i3+2]=(Math.random()-.5)*.03;
+    size[i]=1.2+Math.random()*9.8;
+    twinkle[i]=Math.random()*Math.PI*2;
+
+    const c=getThemeColor(currentTheme);
+    color[i3]=c.r;color[i3+1]=c.g;color[i3+2]=c.b;
+  }
+
+  geometry.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  geometry.setAttribute("color",new THREE.BufferAttribute(color,3));
+  geometry.setAttribute("size",new THREE.BufferAttribute(size,1));
+  geometry.setAttribute("twinkle",new THREE.BufferAttribute(twinkle,1));
+  geometry.setDrawRange(0,activeCount);
+
+  material=new THREE.ShaderMaterial({
+    transparent:true,
+    depthWrite:false,
+    blending:THREE.AdditiveBlending,
+    vertexColors:true,
+    uniforms:{
+      uTime:{value:0},
+      uSizeScale:{value:particleSizeScale},
+      uGlow:{value:glowStrength},
+      uMusic:{value:0},
+      uFlash:{value:0},
+      uSharp:{value:starSharpness}
+    },
+    vertexShader:`
+      attribute float size;
+      attribute float twinkle;
+      uniform float uTime;
+      uniform float uSizeScale;
+      uniform float uMusic;
+      varying vec3 vColor;
+      varying float vTwinkle;
+      void main(){
+        vColor=color;
+        vTwinkle=0.55+0.45*sin(uTime*3.8+twinkle);
+        vec3 p=position;
+        p+=normalize(position+0.001)*sin(uTime*3.0+twinkle)*uMusic*12.0;
+        vec4 mvPosition=modelViewMatrix*vec4(p,1.0);
+        gl_PointSize=size*uSizeScale*(455.0/-mvPosition.z)*(0.78+vTwinkle*0.78+uMusic*.9);
+        gl_Position=projectionMatrix*mvPosition;
+      }
+    `,
+    fragmentShader:`
+      uniform float uGlow;
+      uniform float uMusic;
+      uniform float uFlash;
+      uniform float uSharp;
+      varying vec3 vColor;
+      varying float vTwinkle;
+      void main(){
+        vec2 uv=gl_PointCoord-0.5;
+        float d=length(uv);
+        if(d>0.5){ discard; }
+        float halo=smoothstep(0.5,0.02,d);
+        float core=smoothstep(0.18/uSharp,0.0,d);
+        float star=pow(max(0.0,1.0-d*2.0),3.2+uSharp*1.8);
+        float sparkle=pow(max(0.0,1.0-d*2.0),8.0+uSharp*3.0);
+
+        vec3 saturated=vColor;
+        vec3 coreColor=mix(saturated,vec3(1.0),core*(0.05+uSharp*.04)+uFlash*.15);
+
+        vec3 finalColor=coreColor*(0.72+vTwinkle*.82);
+        finalColor+=saturated*halo*(1.35+uSharp*.35+uMusic*2.6)*uGlow;
+        finalColor+=saturated*core*(2.6+uSharp*.75+uMusic*3.2)*uGlow;
+        finalColor+=vec3(1.0)*star*.18*uGlow;
+        finalColor+=vec3(0.85,0.95,1.0)*sparkle*.28*uGlow*uSharp;
+        finalColor+=vec3(0.75,0.9,1.0)*uFlash*1.8;
+
+        float alpha=(halo*.24+core*.74+star*.22+sparkle*.22)*(uGlow*.85+uMusic*.8+uFlash*.45);
+        gl_FragColor=vec4(finalColor,alpha);
+      }
+    `
+  });
+
+  particles=new THREE.Points(geometry,material);
+  group.add(particles);
+}
+
+function createConstellation(){
+  const segCount=900;
+  const arr=new Float32Array(segCount*2*3);
+  const col=new Float32Array(segCount*2*3);
+  lineGeometry=new THREE.BufferGeometry();
+  lineGeometry.setAttribute("position",new THREE.BufferAttribute(arr,3));
+  lineGeometry.setAttribute("color",new THREE.BufferAttribute(col,3));
+
+  lineMaterial=new THREE.LineBasicMaterial({
+    transparent:true,
+    opacity:.35,
+    vertexColors:true,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false
+  });
+
+  lineGroup=new THREE.LineSegments(lineGeometry,lineMaterial);
+  group.add(lineGroup);
+}
+
+function createTrailLine(){
+  const total=120;
+  const arr=new Float32Array(total*3);
+  trailGeometry=new THREE.BufferGeometry();
+  trailGeometry.setAttribute("position",new THREE.BufferAttribute(arr,3));
+  trailMaterial=new THREE.LineBasicMaterial({
+    color:0x77eaff,
+    transparent:true,
+    opacity:.75,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false
+  });
+  trailLine=new THREE.Line(trailGeometry,trailMaterial);
+  group.add(trailLine);
+}
+
+function createBackgroundStars(){
+  const total=1400;
+  const g=new THREE.BufferGeometry();
+  const p=new Float32Array(total*3);
+  const c=new Float32Array(total*3);
+  const s=new Float32Array(total);
+
+  for(let i=0;i<total;i++){
+    const i3=i*3;
+    const r=900+Math.random()*1400;
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.acos(Math.random()*2-1);
+    p[i3]=r*Math.sin(phi)*Math.cos(theta);
+    p[i3+1]=r*Math.sin(phi)*Math.sin(theta);
+    p[i3+2]=r*Math.cos(phi);
+    const cc=new THREE.Color().setHSL(.56+Math.random()*.18,.85,.55+Math.random()*.35);
+    c[i3]=cc.r;c[i3+1]=cc.g;c[i3+2]=cc.b;
+    s[i]=1+Math.random()*2.8;
+  }
+
+  g.setAttribute("position",new THREE.BufferAttribute(p,3));
+  g.setAttribute("color",new THREE.BufferAttribute(c,3));
+  g.setAttribute("size",new THREE.BufferAttribute(s,1));
+
+  const m=new THREE.ShaderMaterial({
+    transparent:true,
+    depthWrite:false,
+    blending:THREE.AdditiveBlending,
+    vertexColors:true,
+    vertexShader:`
+      attribute float size;
+      varying vec3 vColor;
+      void main(){
+        vColor=color;
+        vec4 mvPosition=modelViewMatrix*vec4(position,1.0);
+        gl_PointSize=size*(300.0/-mvPosition.z);
+        gl_Position=projectionMatrix*mvPosition;
+      }
+    `,
+    fragmentShader:`
+      varying vec3 vColor;
+      void main(){
+        vec2 uv=gl_PointCoord-.5;
+        float d=length(uv);
+        float a=smoothstep(.5,0.0,d);
+        gl_FragColor=vec4(vColor,a*.48);
+      }
+    `
+  });
+
+  starBg=new THREE.Points(g,m);
+  scene.add(starBg);
+}
+
+function createPostFX(){
+  postScene=new THREE.Scene();
+  postCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  postMaterial=new THREE.ShaderMaterial({
+    uniforms:{
+      tDiffuse:{value:null},
+      uTime:{value:0},
+      uFlash:{value:0},
+      uSharp:{value:starSharpness}
+    },
+    vertexShader:`
+      varying vec2 vUv;
+      void main(){
+        vUv=uv;
+        gl_Position=vec4(position.xy,0.0,1.0);
+      }
+    `,
+    fragmentShader:`
+      uniform sampler2D tDiffuse;
+      uniform float uTime;
+      uniform float uFlash;
+      uniform float uSharp;
+      varying vec2 vUv;
+      void main(){
+        vec2 uv=vUv;
+        vec2 centered=uv-.5;
+        float r=length(centered);
+        vec2 aberr=centered*0.004*(1.0+uFlash*2.0);
+        vec4 cr=texture2D(tDiffuse,uv+aberr);
+        vec4 cg=texture2D(tDiffuse,uv);
+        vec4 cb=texture2D(tDiffuse,uv-aberr);
+        vec3 col=vec3(cr.r,cg.g,cb.b);
+        float vignette=smoothstep(.82,.26,r);
+        col*=vignette;
+        col+=vec3(.55,.75,1.0)*uFlash*.22;
+        gl_FragColor=vec4(col,1.0);
+      }
+    `
+  });
+  postMesh=new THREE.Mesh(new THREE.PlaneGeometry(2,2),postMaterial);
+  postScene.add(postMesh);
+
+  rtA=new THREE.WebGLRenderTarget(innerWidth,innerHeight);
+}
+
+function getThemeColor(theme){
+  let h,s,l;
+  if(theme==="cyan"){
+    const list=[0.48,0.50,0.52,0.55];
+    h=list[Math.floor(Math.random()*list.length)];s=.98;l=.45+Math.random()*.25;
+  }else if(theme==="rainbow"){
+    h=Math.random();s=1;l=.45+Math.random()*.28;
+  }else if(theme==="purple"){
+    const list=[.72,.76,.80,.84,.88];
+    h=list[Math.floor(Math.random()*list.length)];s=.98;l=.48+Math.random()*.25;
+  }else if(theme==="gold"){
+    const list=[.075,.095,.12,.145];
+    h=list[Math.floor(Math.random()*list.length)];s=.96;l=.42+Math.random()*.26;
+  }else if(theme==="fire"){
+    const list=[.00,.025,.045,.065,.085];
+    h=list[Math.floor(Math.random()*list.length)];s=1;l=.44+Math.random()*.26;
+  }else if(theme==="ice"){
+    const list=[.50,.54,.58,.62];
+    h=list[Math.floor(Math.random()*list.length)];s=.78+Math.random()*.18;l=.58+Math.random()*.26;
+  }else if(theme==="green"){
+    const list=[.28,.32,.36,.40];
+    h=list[Math.floor(Math.random()*list.length)];s=.92;l=.42+Math.random()*.24;
+  }else if(theme==="redblue"){
+    h=Math.random()<.5 ? (.0+Math.random()*.035) : (.58+Math.random()*.06);
+    s=1;l=.46+Math.random()*.25;
+  }
+  return new THREE.Color().setHSL(h,s,l);
+}
+
+function randomSphere(r){
+  const theta=Math.random()*Math.PI*2;
+  const phi=Math.acos(Math.random()*2-1);
+  return [r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi)];
+}
+
+function setBase(i,x,y,z){
+  const i3=i*3;
+  base[i3]=x;base[i3+1]=y;base[i3+2]=z;
+
+  let c;
+  if(currentShape==="starryNight"){
+    // 更接近梵高星空的色彩层次：
+    // 天空蓝/群青为主，星体金黄，柏树墨绿，村庄暖黄。
+    const rr=Math.random();
+
+    if(y>120 && x>175){
+      c=new THREE.Color().setHSL(.12+Math.random()*.035,.96,.60+Math.random()*.22); // 月亮
+    }else if(y>115 && rr<.38){
+      c=new THREE.Color().setHSL(.13+Math.random()*.045,.98,.58+Math.random()*.28); // 星光金黄
+    }else if(x<-250 && y<110){
+      c=new THREE.Color().setHSL(.37+Math.random()*.06,.55,.18+Math.random()*.18); // 柏树墨绿
+    }else if(y<-160 && rr<.55){
+      c=new THREE.Color().setHSL(.10+Math.random()*.035,.82,.50+Math.random()*.2); // 村庄灯火
+    }else if(y<-80){
+      c=new THREE.Color().setHSL(.58+Math.random()*.045,.68,.30+Math.random()*.18); // 山体蓝绿
+    }else if(rr<.48){
+      c=new THREE.Color().setHSL(.61+Math.random()*.045,.94,.42+Math.random()*.22); // 群青
+    }else if(rr<.78){
+      c=new THREE.Color().setHSL(.56+Math.random()*.05,.90,.47+Math.random()*.24); // 蓝青
+    }else{
+      c=new THREE.Color().setHSL(.13+Math.random()*.04,.92,.58+Math.random()*.22); // 金色笔触
+    }
+  }else{
+    c=getThemeColor(currentTheme);
+  }
+
+  color[i3]=c.r;color[i3+1]=c.g;color[i3+2]=c.b;
+}
+
+function setShape(shape,instant=false){
+  currentShape=shape;
+
+  for(let i=0;i<maxCount;i++){
+    const layer=Math.random();
+    let x=0,y=0,z=0;
+
+    if(shape==="dust"){
+      [x,y,z]=randomSphere(60+Math.random()*280);
+      x*=1.4;y*=.7;
+    }
+
+    if(shape==="planet"){
+      const r=layer<.48?Math.pow(Math.random(),.45)*115:layer<.78?155+(Math.random()-.5)*12:235+(Math.random()-.5)*18;
+      [x,y,z]=randomSphere(r);
+    }
+
+    if(shape==="saturn"){
+      if(layer<.55){
+        [x,y,z]=randomSphere(Math.pow(Math.random(),.45)*128);
+      }else{
+        const a=Math.random()*Math.PI*2;
+        const r=190+Math.random()*120;
+        x=Math.cos(a)*r;z=Math.sin(a)*r;y=(Math.random()-.5)*12;
+      }
+    }
+
+    if(shape==="galaxy"){
+      const arm=Math.floor(Math.random()*4);
+      const a=arm*Math.PI*.5+Math.random()*1.35;
+      const r=Math.pow(Math.random(),.55)*290;
+      const twist=r*.036;
+      x=Math.cos(a+twist)*r;z=Math.sin(a+twist)*r;y=(Math.random()-.5)*(18+r*.08);
+    }
+
+    if(shape==="blackhole"){
+      const a=Math.random()*Math.PI*2;
+      const r=45+Math.pow(Math.random(),.42)*280;
+      x=Math.cos(a+r*.04)*r;z=Math.sin(a+r*.04)*r;y=(Math.random()-.5)*12+Math.sin(a*3)*8;
+      if(layer<.18)[x,y,z]=randomSphere(Math.random()*45);
+    }
+
+    if(shape==="dna"){
+      const t=Math.random()*Math.PI*10;
+      const strand=Math.random()<.5?1:-1;
+      const r=76;
+      x=Math.cos(t)*r*strand;z=Math.sin(t)*r*strand;y=(t-Math.PI*5)*22;
+      if(layer>.78){x=(Math.random()-.5)*r*2;z=(Math.random()-.5)*r*2;}
+    }
+
+    if(shape==="heart"){
+      const t=Math.random()*Math.PI*2;
+      const s=8.8;
+      x=16*Math.pow(Math.sin(t),3)*s;
+      y=(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*s;
+      z=(Math.random()-.5)*90;y-=30;
+    }
+
+    if(shape==="flower"){
+      const t=Math.random()*Math.PI*2;
+      const petal=6;
+      const r=(92+82*Math.sin(petal*t))*Math.pow(Math.random(),.45);
+      x=Math.cos(t)*r;y=Math.sin(t)*r;z=(Math.random()-.5)*90+Math.cos(petal*t)*30;
+    }
+
+    if(shape==="phoenix"){
+      const side=Math.random()<.5?-1:1;
+      const t=Math.random();
+      const spread=Math.pow(Math.random(),.6);
+      x=side*(60+t*220)*spread;
+      y=Math.sin(t*Math.PI)*150+(Math.random()-.5)*35;
+      z=(Math.random()-.5)*90+Math.cos(t*6)*30;
+      if(layer<.22){x=(Math.random()-.5)*60;y=-80+Math.random()*120;z=(Math.random()-.5)*60;}
+      if(layer>.9){x=(Math.random()-.5)*45;y=-160-Math.random()*120;z=(Math.random()-.5)*45;}
+    }
+
+    if(shape==="dragon"){
+      const t=Math.random()*Math.PI*7;
+      const r=90+Math.sin(t*2)*45;
+      x=Math.cos(t)*r+(t-Math.PI*3.5)*26;
+      y=Math.sin(t*1.4)*85;
+      z=Math.sin(t)*r;
+      if(layer>.82){x+=Math.cos(t*3)*70;y+=Math.sin(t*3)*45;}
+    }
+
+    if(shape==="nova"){
+      const r=Math.pow(Math.random(),.28)*360;
+      [x,y,z]=randomSphere(r);
+    }
+
+
+    if(shape==="starryNight"){
+      // 梵高《星空》风格复杂粒子图案：
+      // 多层旋涡星云、月亮、亮星光晕、流动天空笔触、远山、村庄、柏树剪影
+      const layer=Math.random();
+
+      if(layer<.24){
+        // 主旋涡星云：左中部大卷云
+        const t=Math.random()*Math.PI*9.5;
+        const r=12+t*9.6+Math.random()*18;
+        const wobble=Math.sin(t*2.1)*12;
+        x=-105+Math.cos(t)*r + wobble;
+        y=78+Math.sin(t)*r*.62 + Math.sin(t*1.4)*18;
+        z=-70+(Math.random()-.5)*42;
+      }else if(layer<.38){
+        // 副旋涡：中右小旋涡
+        const t=Math.random()*Math.PI*6.5;
+        const r=10+t*7.2+Math.random()*12;
+        x=95+Math.cos(t)*r;
+        y=95+Math.sin(t)*r*.72;
+        z=-82+(Math.random()-.5)*36;
+      }else if(layer<.50){
+        // 流动天空笔触：波浪状横向星云
+        const u=Math.random();
+        const lane=Math.floor(Math.random()*4);
+        x=-350+u*720;
+        y=132-lane*38+Math.sin(u*10+lane)*28+Math.sin(u*25)*10;
+        z=-100+lane*22+(Math.random()-.5)*24;
+      }else if(layer<.62){
+        // 星体与光晕：多个亮星
+        const stars=[
+          [-250,145,34],
+          [-130,168,26],
+          [15,160,32],
+          [150,150,28],
+          [275,92,24],
+          [-305,40,20],
+          [45,45,18]
+        ];
+        const s=stars[Math.floor(Math.random()*stars.length)];
+        const a=Math.random()*Math.PI*2;
+        const rr=Math.pow(Math.random(),.58)*s[2];
+        x=s[0]+Math.cos(a)*rr;
+        y=s[1]+Math.sin(a)*rr;
+        z=-92+(Math.random()-.5)*32;
+      }else if(layer<.72){
+        // 右上角月亮 / 金色星体
+        const a=Math.random()*Math.PI*2;
+        const rr=Math.sqrt(Math.random())*68;
+        const crescent=Math.random()<.28;
+        x=255+Math.cos(a)*rr;
+        y=158+Math.sin(a)*rr;
+        z=-65+(Math.random()-.5)*30;
+        if(crescent){
+          x+=24;
+          y+=4;
+        }
+      }else if(layer<.82){
+        // 远山起伏
+        x=(Math.random()-.5)*740;
+        y=-82+Math.sin(x*.015)*26+Math.sin(x*.037)*16+Math.random()*9;
+        z=20+(Math.random()-.5)*34;
+      }else if(layer<.90){
+        // 村庄灯火与屋顶
+        const house=Math.floor(Math.random()*14);
+        const hx=-295+house*45+(Math.random()-.5)*22;
+        const roof=Math.random()<.45;
+        x=hx+(Math.random()-.5)*34;
+        y=roof ? -174+Math.random()*20 : -204+Math.random()*42;
+        z=78+(Math.random()-.5)*28;
+      }else if(layer<.97){
+        // 柏树剪影：左侧深色火焰形
+        const h=Math.pow(Math.random(),.55);
+        const width=(1-h)*58+8;
+        x=-305+(Math.random()-.5)*width;
+        y=-210+h*305+Math.sin(h*18)*12;
+        z=92+(Math.random()-.5)*36;
+      }else{
+        // 细碎星尘
+        x=(Math.random()-.5)*760;
+        y=-20+Math.random()*230;
+        z=-130+(Math.random()-.5)*80;
+      }
+    }
+
+    if(shape==="text"){
+      const p=textPoint();
+      x=p[0];y=p[1];z=p[2];
+    }
+
+    setBase(i,x,y,z);
+
+    if(instant){
+      const i3=i*3;
+      pos[i3]=x;pos[i3+1]=y;pos[i3+2]=z;
+    }
+  }
+
+  geometry.attributes.color.needsUpdate=true;
+  geometry.attributes.position.needsUpdate=true;
+  updateConstellation();
+  if(shape==="text"){
+    targetScale=.82;
+    targetZoom=920;
+    particleSizeScale=Math.max(particleSizeScale,1.15);
+    sizeRange.value=particleSizeScale.toFixed(1);
+    refreshControls&&refreshControls();
+  }
+  statusEl.textContent="形态切换："+shapeName(shape)+" ｜ 主题："+themeName(currentTheme);
+}
+
+function rebuildTextParticleCache(){
+  const value=(document.getElementById("customText").value||"星辰").trim().slice(0,10) || "星辰";
+
+  if(value===textParticleKey && textParticleCache.length>0){
+    return;
+  }
+
+  textParticleKey=value;
+  textParticleCache=[];
+
+  const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d",{willReadFrequently:true});
+
+  canvas.width=1800;
+  canvas.height=620;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  let fontSize=value.length<=2?300:value.length<=4?238:value.length<=7?176:132;
+  const fontStack='-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif';
+  ctx.font=`900 ${fontSize}px ${fontStack}`;
+
+  while(ctx.measureText(value).width>canvas.width*0.88 && fontSize>72){
+    fontSize-=8;
+    ctx.font=`900 ${fontSize}px ${fontStack}`;
+  }
+
+  // 外描边增加采样厚度，让文字边界更清楚
+  ctx.lineJoin="round";
+  ctx.lineCap="round";
+  ctx.strokeStyle="white";
+  ctx.lineWidth=Math.max(4,fontSize*0.035);
+  ctx.strokeText(value,canvas.width/2,canvas.height/2);
+
+  ctx.fillStyle="white";
+  ctx.fillText(value,canvas.width/2,canvas.height/2);
+
+  const img=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const step=4;
+  const scale=0.42;
+
+  for(let y=0;y<canvas.height;y+=step){
+    for(let x=0;x<canvas.width;x+=step){
+      const a=img[(y*canvas.width+x)*4+3];
+      if(a>70){
+        textParticleCache.push([
+          (x-canvas.width/2)*scale+(Math.random()-.5)*1.8,
+          -(y-canvas.height/2)*scale+(Math.random()-.5)*1.8,
+          (Math.random()-.5)*14
+        ]);
+      }
+    }
+  }
+
+  // 增加少量前后层，保持 3D 感但不破坏文字可读性
+  const original=textParticleCache.slice();
+  const extra=Math.min(1200,Math.floor(original.length*.18));
+  for(let i=0;i<extra;i++){
+    const p=original[Math.floor(Math.random()*original.length)];
+    textParticleCache.push([
+      p[0]+(Math.random()-.5)*2,
+      p[1]+(Math.random()-.5)*2,
+      p[2]+(Math.random()-.5)*18
+    ]);
+  }
+
+  if(textParticleCache.length<120){
+    for(let i=0;i<2200;i++){
+      const a=Math.random()*Math.PI*2;
+      const r=60+Math.random()*150;
+      textParticleCache.push([Math.cos(a)*r,Math.sin(a)*r,(Math.random()-.5)*30]);
+    }
+  }
+}
+function textPoint(){
+  rebuildTextParticleCache();
+
+  const p=textParticleCache[Math.floor(Math.random()*textParticleCache.length)] || [0,0,0];
+
+  return [
+    p[0]+(Math.random()-.5)*0.9,
+    p[1]+(Math.random()-.5)*0.9,
+    p[2]+(Math.random()-.5)*0.45
+  ];
+}
+function drawTrail(){
+  const arr=trailGeometry.attributes.position.array;
+  const total=arr.length/3;
+  for(let i=0;i<total;i++){
+    const p=pointerTrail[Math.floor(i/pointerTrail.length*pointerTrail.length)] || {x:0,y:0,z:0};
+    const idx=i*3;
+    if(pointerTrail.length){
+      const src=pointerTrail[Math.min(pointerTrail.length-1,Math.floor(i/total*pointerTrail.length))];
+      arr[idx]=src.x;arr[idx+1]=src.y;arr[idx+2]=src.z;
+    }else{
+      arr[idx]=0;arr[idx+1]=0;arr[idx+2]=0;
+    }
+  }
+  trailMaterial.opacity=Math.min(.88,pointerTrail.length/60);
+  trailGeometry.attributes.position.needsUpdate=true;
+}
+
+function updateConstellation(){
+  if(lineStrength<=0.01||connectionMode==="stars"){
+    lineMaterial.opacity=0;
+    return;
+  }
+
+  const positions=lineGeometry.attributes.position.array;
+  const colors=lineGeometry.attributes.color.array;
+  const seg=Math.floor((positions.length/6)*lineDensity);
+  const step=Math.max(8,Math.floor(activeCount/seg));
+  let idx=0;
+
+  for(let s=0;s<seg;s++){
+    const i=(s*step)%activeCount;
+    const j=(i+Math.floor(activeCount*.021)+s*7)%activeCount;
+    const i3=i*3,j3=j*3;
+
+    positions[idx]=pos[i3];positions[idx+1]=pos[i3+1];positions[idx+2]=pos[i3+2];
+    positions[idx+3]=pos[j3];positions[idx+4]=pos[j3+1];positions[idx+5]=pos[j3+2];
+
+    colors[idx]=color[i3];colors[idx+1]=color[i3+1];colors[idx+2]=color[i3+2];
+    colors[idx+3]=color[j3];colors[idx+4]=color[j3+1];colors[idx+5]=color[j3+2];
+    idx+=6;
+  }
+
+  lineMaterial.opacity=(connectionMode==="energy"? .2+lineStrength*.35+musicLevel*.28 : .08+lineStrength*.22);
+  lineGeometry.attributes.position.needsUpdate=true;
+  lineGeometry.attributes.color.needsUpdate=true;
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  time+=0.016;
+
+  material.uniforms.uTime.value=time;
+  material.uniforms.uSizeScale.value=particleSizeScale;
+  material.uniforms.uGlow.value=glowStrength;
+  material.uniforms.uMusic.value=musicLevel;
+  material.uniforms.uFlash.value=flash;
+  material.uniforms.uSharp.value=starSharpness;
+
+  renderer.setRenderTarget(null);
+  renderer.setClearColor(0x01030a,trailAlpha);
+  renderer.clearColor();
+
+  updateMusic();
+  updateEffectBySelection();
+  updateParticles();
+  updateConstellation();
+  drawTrail();
+  updateGame();
+
+  group.rotation.x+=(targetRotX-group.rotation.x)*.13;
+  group.rotation.y+=(targetRotY-group.rotation.y)*.13;
+  group.rotation.z+=(targetRotZ-group.rotation.z)*.08;
+
+  group.scale.x+=(targetScale-group.scale.x)*.1;
+  group.scale.y+=(targetScale-group.scale.y)*.1;
+  group.scale.z+=(targetScale-group.scale.z)*.1;
+
+  const shake=(Math.random()-.5)*screenShake;
+  camera.position.z+=(targetZoom-camera.position.z)*.08;
+  camera.position.x=shake;
+  camera.position.y=-shake*.5;
+  camera.lookAt(0,0,0);
+
+  if(starBg){
+    starBg.rotation.y+=.00025+musicLevel*.001;
+    starBg.rotation.x+=.00012;
+  }
+
+  screenShake*=.9;
+  flash*=.88;
+
+  renderer.render(scene,camera);
+}
+
+function updateMusic(){
+  if(!analyser||!audioData){
+    musicLevel*=.92;musicBass*=.92;musicHigh*=.92;
+    return;
+  }
+
+  analyser.getByteFrequencyData(audioData);
+  let sum=0,bass=0,high=0;
+  for(let i=0;i<audioData.length;i++){
+    sum+=audioData[i];
+    if(i<8)bass+=audioData[i];
+    if(i>audioData.length*.62)high+=audioData[i];
+  }
+
+  const avg=sum/audioData.length/255;
+  musicLevel=musicLevel*.82+Math.min(1,avg*2.25)*.18;
+  musicBass=musicBass*.82+Math.min(1,bass/8/255*2.2)*.18;
+  musicHigh=musicHigh*.82+Math.min(1,high/(audioData.length*.38)/255*2.2)*.18;
+
+  if(musicBass>.38&&Date.now()-lastExplode>850){
+    explode(.55);
+    lastExplode=Date.now();
+  }
+
+  if(musicLevel>.22)wavePower=Math.max(wavePower,musicLevel*.75);
+}
+
+function updateEffectBySelection(){
+  if(selectedEffect==="freeze")freezePower=Math.max(freezePower,.92);
+  if(selectedEffect==="swirl"){swirlPower=Math.max(swirlPower,1.05);targetRotY+=.008*physicsStrength;}
+  if(selectedEffect==="wave")wavePower=Math.max(wavePower,1.05);
+  if(selectedEffect==="collapse")collapsePower=Math.max(collapsePower,.95);
+  if(selectedEffect==="portal"){portalPower=Math.max(portalPower,1.12);swirlPower=Math.max(swirlPower,.95);}
+  if(selectedEffect==="nova"){
+    if(Date.now()-lastExplode>1300){explode(1);lastExplode=Date.now();}
+  }
+}
+
+function updateParticles(){
+  const slow=1-freezePower*.94;
+
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    let x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    let vx=vel[i3],vy=vel[i3+1],vz=vel[i3+2];
+    const bx=base[i3],by=base[i3+1],bz=base[i3+2];
+
+    vx+=(bx-x)*.016*slow*physicsStrength;
+    vy+=(by-y)*.016*slow*physicsStrength;
+    vz+=(bz-z)*.016*slow*physicsStrength;
+
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+
+    if(focusPower>.05||collapsePower>.05){
+      const pull=(focusPower*.15+collapsePower*.105)*slow*physicsStrength;
+      vx+=(-x/d)*pull*15;vy+=(-y/d)*pull*15;vz+=(-z/d)*pull*15;
+    }
+
+    if(swirlPower>.05){
+      vx+=(-y/d)*swirlPower*.76*slow*physicsStrength;
+      vy+=(x/d)*swirlPower*.76*slow*physicsStrength;
+      vz+=Math.sin(time*2+i*.01)*swirlPower*.16*slow*physicsStrength;
+    }
+
+    if(portalPower>.05){
+      const r=Math.sqrt(x*x+z*z)||1;
+      vx+=(-z/r)*portalPower*.86*slow*physicsStrength;
+      vz+=(x/r)*portalPower*.86*slow*physicsStrength;
+      vy+=Math.sin(r*.05-time*5)*portalPower*.18;
+    }
+
+    if(cutPower>.05){
+      const side=x>0?1:-1;
+      vx+=side*cutPower*1.1*physicsStrength;
+      vy+=Math.sin(i*.1+time*8)*cutPower*.28;
+    }
+
+    if(wavePower>.05||musicLevel>.05){
+      const wv=wavePower+musicLevel*.78;
+      const wave=Math.sin(d*.08-time*8);
+      vx+=(x/d)*wave*wv*.52*slow*physicsStrength;
+      vy+=(y/d)*wave*wv*.52*slow*physicsStrength;
+      vz+=(z/d)*wave*wv*.52*slow*physicsStrength;
+    }
+
+    vx+=Math.sin(time*1.6+i*.014)*.004*slow*physicsStrength;
+    vy+=Math.cos(time*1.3+i*.017)*.004*slow*physicsStrength;
+    vz+=Math.sin(time+i*.019)*.004*slow*physicsStrength;
+
+    vx*=freezePower>.75?.65:.82;
+    vy*=freezePower>.75?.65:.82;
+    vz*=freezePower>.75?.65:.82;
+
+    pos[i3]=x+vx*slow;
+    pos[i3+1]=y+vy*slow;
+    pos[i3+2]=z+vz*slow;
+
+    vel[i3]=vx;vel[i3+1]=vy;vel[i3+2]=vz;
+  }
+
+  focusPower*=.88;freezePower*=.94;swirlPower*=.92;wavePower*=.92;collapsePower*=.91;portalPower*=.93;cutPower*=.86;
+  geometry.attributes.position.needsUpdate=true;
+}
+
+function explode(amount=1){
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+    const p=(2.4+Math.random()*6.2)*physicsStrength*amount;
+    vel[i3]+=x/d*p;vel[i3+1]+=y/d*p;vel[i3+2]+=z/d*p;
+  }
+  screenShake=Math.max(screenShake,8*amount);
+  flash=Math.max(flash,.8*amount);
+}
+
+function releaseSkill(name,desc,fn){
+  skillCard.querySelector(".name").textContent=name;
+  skillCard.querySelector(".desc").textContent=desc;
+  skillCard.classList.add("show");
+  clearTimeout(releaseSkill.t);
+  releaseSkill.t=setTimeout(()=>skillCard.classList.remove("show"),1600);
+  statusEl.textContent=name+" ｜ "+desc;
+  gestureLockedUntil=Date.now()+900;
+  fn&&fn();
+}
+
+function makePortalOverlay(){
+  // 不切换当前形状，只叠加星门物理效果
+  portalPower=1.45;
+  swirlPower=1.1;
+  targetRotZ+=Math.PI*.25;
+  flash=Math.max(flash,.35);
+}
+
+function binaryStarOverlay(){
+  // 不改变 base 形态，只临时把左右两侧粒子推开，形成双星错觉
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const side=pos[i3]>=0?1:-1;
+    vel[i3]+=side*(2.8+Math.random()*2.2)*physicsStrength;
+    vel[i3+1]+=(Math.random()-.5)*1.2*physicsStrength;
+    vel[i3+2]+=(Math.random()-.5)*1.2*physicsStrength;
+  }
+  wavePower=Math.max(wavePower,.8);
+  flash=Math.max(flash,.25);
+}
+
+function riseCurrentShape(){
+  for(let i=0;i<activeCount;i++){
+    vel[i*3+1]+=3.4+Math.random()*2.2;
+  }
+  wavePower=Math.max(wavePower,.45);
+}
+
+function makePortal(){
+  setShape("saturn",false);
+  portalPower=1.4;
+  swirlPower=1.2;
+  targetRotZ+=Math.PI*.35;
+}
+
+function makeBinaryStar(){
+  for(let i=0;i<maxCount;i++){
+    const i3=i*3;
+    const side=i%2===0?-1:1;
+    const r=Math.pow(Math.random(),.45)*105;
+    const [sx,sy,sz]=randomSphere(r);
+    setBase(i,side*135+sx,sy,sz);
+  }
+  geometry.attributes.color.needsUpdate=true;
+}
+
+function makeAccretion(){
+  setShape("blackhole",false);
+  portalPower=1.5;
+  collapsePower=1.1;
+}
+
+function makeColumn(){
+  for(let i=0;i<maxCount;i++){
+    const t=(Math.random()-.5)*520;
+    const a=Math.random()*Math.PI*2;
+    const r=45+Math.random()*80;
+    setBase(i,Math.cos(a)*r,t,Math.sin(a)*r);
+  }
+  geometry.attributes.color.needsUpdate=true;
+}
+
+function risePlanet(){
+  setShape("planet",false);
+  for(let i=0;i<activeCount;i++){
+    vel[i*3+1]+=4+Math.random()*3;
+  }
+}
+
+function denseCore(){
+  collapsePower=1.5;
+  focusPower=1.3;
+}
+
+function detectTrailShape(){
+  if(Date.now()-lastTrailDetectAt<900) return null;
+  if(pointerTrail.length<28) return null;
+
+  const pts=pointerTrail.slice(-90);
+  let minX=999,maxX=-999,minY=999,maxY=-999;
+  pts.forEach(p=>{
+    minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);
+    minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);
+  });
+
+  const w=maxX-minX,h=maxY-minY;
+  if(w<70||h<70) return null;
+
+  const first=pts[0],last=pts[pts.length-1];
+  const closed=Math.hypot(first.x-last.x,first.y-last.y)<Math.max(56,Math.min(w,h)*.42);
+
+  const cx=(minX+maxX)/2;
+  const cy=(minY+maxY)/2;
+  let totalAngle=0;
+  let lastA=Math.atan2(pts[0].y-cy,pts[0].x-cx);
+  let length=0;
+
+  for(let i=1;i<pts.length;i++){
+    const a=Math.atan2(pts[i].y-cy,pts[i].x-cx);
+    let d=a-lastA;
+    while(d>Math.PI)d-=Math.PI*2;
+    while(d<-Math.PI)d+=Math.PI*2;
+    totalAngle+=d;
+    lastA=a;
+    length+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+  }
+
+  const aspect=w/(h+.001);
+
+  if(closed && Math.abs(totalAngle)>Math.PI*1.15 && aspect>.45 && aspect<2.1){
+    lastTrailDetectAt=Date.now();
+    return "circle";
+  }
+
+  // S 形：非闭合，路径足够长，转向明显
+  if(!closed && length>260 && Math.abs(totalAngle)>Math.PI*.7 && h>w*.75){
+    lastTrailDetectAt=Date.now();
+    return "s";
+  }
+
+  // 爱心检测放宽：闭合 + 上宽下窄趋势
+  const upper=pts.filter(p=>p.y>cy).length;
+  const lower=pts.filter(p=>p.y<=cy).length;
+  if(closed && upper>lower*.65 && w>90 && h>80){
+    lastTrailDetectAt=Date.now();
+    return "heart";
+  }
+
+  return null;
+}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0));}
+function angle(a,b,c){
+  const ab={x:a.x-b.x,y:a.y-b.y,z:(a.z||0)-(b.z||0)};
+  const cb={x:c.x-b.x,y:c.y-b.y,z:(c.z||0)-(b.z||0)};
+  const dot=ab.x*cb.x+ab.y*cb.y+ab.z*cb.z;
+  const abLen=Math.hypot(ab.x,ab.y,ab.z);
+  const cbLen=Math.hypot(cb.x,cb.y,cb.z);
+  return Math.acos(dot/(abLen*cbLen+.00001));
+}
+
+function fingerScore(lm,name){
+  const map={index:[5,6,8],middle:[9,10,12],ring:[13,14,16],pinky:[17,18,20]};
+  const [mcp,pip,tipIndex]=map[name];
+
+  const wrist=lm[0];
+  const tipPoint=lm[tipIndex];
+  const pipPoint=lm[pip];
+  const mcpPoint=lm[mcp];
+
+  const tipW=dist(tipPoint,wrist);
+  const pipW=dist(pipPoint,wrist);
+  const tipM=dist(tipPoint,mcpPoint);
+  const pipM=dist(pipPoint,mcpPoint);
+  const jointAngle=angle(mcpPoint,pipPoint,tipPoint);
+
+  // 关键优化：
+  // 1. 不再强依赖 y 方向，手倾斜也不易误判；
+  // 2. 用连续评分而不是硬判断；
+  // 3. 食指单独放宽，减少“伸出食指变成其它手势”。
+  const wristRatio=tipW/(pipW+.0001);
+  const mcpRatio=tipM/(pipM+.0001);
+
+  let score=0;
+  score += THREE.MathUtils.clamp((wristRatio-.98)/.18,0,1)*.42;
+  score += THREE.MathUtils.clamp((mcpRatio-.96)/.22,0,1)*.30;
+  score += THREE.MathUtils.clamp((jointAngle-1.72)/.85,0,1)*.28;
+
+  if(name==="index"){
+    score += THREE.MathUtils.clamp((jointAngle-1.55)/.75,0,.18);
+  }
+
+  return THREE.MathUtils.clamp(score,0,1);
+}
+
+function fingerExtended(lm,name){
+  return fingerScore(lm,name)>.54;
+}
+
+function fingerCurl(lm,name){
+  return fingerScore(lm,name)<.42;
+}
+
+function thumbSpreadScore(lm,palmSize){
+  const thumb=lm[4];
+  const index=lm[8];
+  const middle=lm[12];
+  const wrist=lm[0];
+
+  const thumbIndex=dist(thumb,index)/(palmSize+.0001);
+  const thumbMiddle=dist(thumb,middle)/(palmSize+.0001);
+  const thumbWrist=dist(thumb,wrist)/(palmSize+.0001);
+
+  // 拇指只用于区分五指，不参与四指判断，避免四指识别失败。
+  let score=0;
+  score+=THREE.MathUtils.clamp((thumbIndex-.40)/.58,0,1)*.45;
+  score+=THREE.MathUtils.clamp((thumbMiddle-.52)/.62,0,1)*.32;
+  score+=THREE.MathUtils.clamp((thumbWrist-.82)/.72,0,1)*.23;
+
+  return THREE.MathUtils.clamp(score,0,1);
+}
+
+function classifyCoreGesture(lm){
+  const wrist=lm[0];
+  const palmCenter=lm[9];
+  const thumb=lm[4];
+  const index=lm[8];
+
+  const palmSize=dist(wrist,palmCenter)+.0001;
+
+  const sIndex=fingerScore(lm,"index");
+  const sMiddle=fingerScore(lm,"middle");
+  const sRing=fingerScore(lm,"ring");
+  const sPinky=fingerScore(lm,"pinky");
+  const sThumb=thumbSpreadScore(lm,palmSize);
+
+  // V3.2：采用“指头数量优先”的简单识别。
+  // 四指 = 食指/中指/无名指/小指全部伸出，不再依赖拇指。
+  // 五指 = 四根长手指伸出 + 拇指展开。
+  const indexUp=sIndex>.50;
+  const middleUp=sMiddle>.56;
+  const ringUp=sRing>.56;
+  const pinkyUp=sPinky>.54;
+  const thumbUp=sThumb>.42;
+
+  const indexDown=sIndex<.38;
+  const middleDown=sMiddle<.45;
+  const ringDown=sRing<.45;
+  const pinkyDown=sPinky<.44;
+
+  const longCount=[indexUp,middleUp,ringUp,pinkyUp].filter(Boolean).length;
+  const pinch=dist(index,thumb)/palmSize;
+
+  let gesture="idle";
+  let confidence=.35;
+
+  if(indexUp && pinch<.64){
+    gesture="pinch";
+    confidence=Math.max(.74,1-pinch);
+  }
+  else if(longCount===4 && thumbUp){
+    gesture="fiveFinger";
+    confidence=(sIndex+sMiddle+sRing+sPinky+sThumb)/5;
+  }
+  else if(longCount===4){
+    // 单手四指不再作为功能手势，避免难识别和误触。
+    gesture=thumbUp ? "fiveFinger" : "idle";
+    confidence=thumbUp ? (sIndex+sMiddle+sRing+sPinky+sThumb)/5 : .42;
+  }
+  else if(indexUp && middleUp && ringUp && !pinkyUp){
+    gesture="threeFinger";
+    confidence=(sIndex+sMiddle+sRing)/3 - sPinky*.12;
+  }
+  else if(indexUp && middleUp && !ringUp && !pinkyUp){
+    gesture="twoFinger";
+    confidence=(sIndex+sMiddle)/2 - (sRing+sPinky)*.10;
+  }
+  else if(indexUp && !middleUp && !ringUp && !pinkyUp){
+    gesture="oneFinger";
+    confidence=sIndex - (sMiddle+sRing+sPinky)*.08;
+  }
+  else if(indexDown && middleDown && ringDown && pinkyDown){
+    gesture="fist";
+    confidence=1-(sIndex+sMiddle+sRing+sPinky)/4;
+  }
+
+  confidence=THREE.MathUtils.clamp(confidence,0,1);
+
+  // 食指保护：如果刚刚稳定在食指，除非其它三指评分很明确，否则不跳到四/五指。
+  const foldedAvg=(sMiddle+sRing+sPinky)/3;
+  if(stableGestureState==="oneFinger" && (gesture==="fourFinger" || gesture==="fiveFinger") && foldedAvg<.64){
+    gesture="oneFinger";
+    confidence=Math.max(confidence,.60);
+  }
+
+  if(confidence<.45){
+    gesture="idle";
+  }
+
+  return {
+    gesture,
+    confidence,
+    indexUp,middleUp,ringUp,pinkyUp,thumbUp,
+    longCount,
+    pinch,
+    scores:{index:sIndex,middle:sMiddle,ring:sRing,pinky:sPinky,thumb:sThumb}
+  };
+}
+function stableGesture(raw,confidence=.6){
+  const now=Date.now();
+
+  if(confidence<.46 && stableGestureState!=="idle"){
+    return stableGestureState;
+  }
+
+  if(now<gestureLockedUntil){
+    return lockedGesture || stableGestureState || raw;
+  }
+
+  if(raw!==pendingGesture){
+    pendingGesture=raw;
+    pendingFrames=1;
+  }else{
+    pendingFrames++;
+  }
+
+  const need={
+    idle:6,
+    oneFinger:3,
+    twoFinger:4,
+    threeFinger:4,
+    fourFinger:4,
+    fiveFinger:5,
+    fist:5,
+    pinch:3
+  }[raw] || 5;
+
+  const minHold={
+    idle:140,
+    oneFinger:520,
+    twoFinger:480,
+    threeFinger:480,
+    fourFinger:480,
+    fiveFinger:560,
+    fist:560,
+    pinch:460
+  }[stableGestureState] || 500;
+
+  // 从一指跳到四/五指仍稍微保守，避免一指误判四指。
+  const extraNeed=(stableGestureState==="oneFinger"&&(raw==="fourFinger"||raw==="fiveFinger"))?2:0;
+  const confidenceGate=(raw==="fourFinger")?.50:(raw==="fiveFinger")?.52:.46;
+
+  if(
+    pendingFrames>=need+extraNeed &&
+    confidence>=confidenceGate &&
+    raw!==stableGestureState &&
+    now-lastStableChange>minHold
+  ){
+    stableGestureState=raw;
+    lockedGesture=raw;
+    lastStableChange=now;
+
+    if(raw==="oneFinger"){
+      pointerTrail=[];
+      oneFingerStartedAt=now;
+    }
+
+    if(gestureLock){
+      gestureLock.textContent="锁定手势："+gestureName(stableGestureState);
+    }
+  }
+
+  recognitionDebug={raw,stable:stableGestureState,confidence};
+  return stableGestureState;
+}
+function getDistanceScale(palmSize){
+  palmSmooth=palmSmooth?palmSmooth*.72+palmSize*.28:palmSize;
+  palmMin=Math.min(palmMin,palmSmooth);
+  palmMax=Math.max(palmMax,palmSmooth);
+  const minV=Math.min(palmMin,.045);
+  const maxV=Math.max(palmMax,.20);
+  let near=(palmSmooth-minV)/(maxV-minV+.0001);
+  near=THREE.MathUtils.clamp(near,0,1);
+  return Math.pow(near,.62);
+}
+
+function handCenter(lm){
+  return {
+    x:(lm[0].x+lm[5].x+lm[9].x+lm[13].x+lm[17].x)/5,
+    y:(lm[0].y+lm[5].y+lm[9].y+lm[13].y+lm[17].y)/5,
+    z:((lm[0].z||0)+(lm[5].z||0)+(lm[9].z||0)+(lm[13].z||0)+(lm[17].z||0))/5
+  };
+}
+
+function isOpenPalm(lm){
+  return ["index","middle","ring","pinky"].map(n=>fingerExtended(lm,n)).filter(Boolean).length>=4;
+}
+
+function isHeartGestureTwoHands(a,b){
+  if(!a||!b) return false;
+
+  const ca=handCenter(a);
+  const cb=handCenter(b);
+  const centerDist=Math.hypot(ca.x-cb.x,ca.y-cb.y);
+
+  const aIndex=a[8], bIndex=b[8];
+  const aThumb=a[4], bThumb=b[4];
+
+  const indexDist=Math.hypot(aIndex.x-bIndex.x,aIndex.y-bIndex.y);
+  const thumbDist=Math.hypot(aThumb.x-bThumb.x,aThumb.y-bThumb.y);
+
+  const palmA=dist(a[0],a[9]);
+  const palmB=dist(b[0],b[9]);
+  const sizeOk=palmA>.035 && palmB>.035;
+
+  // 双手比心一般两手靠近，两个食指/拇指也靠近。
+  return sizeOk && centerDist<.48 && indexDist<.22 && thumbDist<.26;
+}
+
+function triggerHeartEgg(){
+  const now=Date.now();
+  if(now-lastHeartEgg<6000) return;
+
+  lastHeartEgg=now;
+  heartEggActiveUntil=now+4200;
+
+  const text=document.getElementById("easterEggText");
+  if(text){
+    text.textContent="马跳感谢你游玩";
+    text.classList.add("show");
+    setTimeout(()=>text.classList.remove("show"),4000);
+  }
+
+  spawnFloatingHearts();
+
+  releaseSkill("隐藏彩蛋触发","三连超新星：马跳感谢你游玩",()=>{
+    const input=document.getElementById("customText");
+    if(input) input.value="马跳感谢你游玩";
+    textParticleKey="";
+    rebuildTextParticleCache();
+    setShape("text",false);
+    wavePower=1.35;
+    flash=Math.max(flash,.9);
+  });
+
+  novaComboCount=0;
+}
+function spawnFloatingHearts(){
+  for(let i=0;i<26;i++){
+    const h=document.createElement("div");
+    h.className="floatHeart";
+    h.textContent=Math.random()<.5?"❤":"♥";
+    h.style.left=(40+Math.random()*20)+"vw";
+    h.style.top=(42+Math.random()*18)+"vh";
+    h.style.setProperty("--dx",((Math.random()-.5)*520)+"px");
+    h.style.setProperty("--dy",(-160-Math.random()*360)+"px");
+    h.style.setProperty("--rot",((Math.random()-.5)*120)+"deg");
+    h.style.fontSize=(18+Math.random()*32)+"px";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),2800);
+  }
+}
+
+function isSimpleOpenHand(lm){
+  const core=classifyCoreGesture(lm);
+  const s=core.scores||{};
+  const longOpen=(s.index>.48 && s.middle>.54 && s.ring>.54 && s.pinky>.52);
+  return longOpen;
+}
+
+function analyzeHands(allHands){
+  if(!allHands || !allHands.length) return;
+
+  // V3.3：单手负责简单指头数量；两只张开手只负责触发原四指的星门/虫洞。
+  if(allHands.length>=2){
+    const a=allHands[0];
+    const b=allHands[1];
+
+    if(isSimpleOpenHand(a) && isSimpleOpenHand(b)){
+      portalPower=Math.max(portalPower,1.18);
+      swirlPower=Math.max(swirlPower,.72);
+      flash=Math.max(flash,.32);
+      statusEl.textContent="双手张开：星门 / 虫洞 ｜ "+shapeName(currentShape)+" ｜ "+themeName(currentTheme);
+      if(gestureLock) gestureLock.textContent="锁定手势：双手张开";
+      hud.innerHTML="手势：双手张开<br>模式：星门 / 虫洞<br>画质："+qualityVal.textContent+"<br>缩放："+targetScale.toFixed(2);
+      return;
+    }
+  }
+
+  let best=allHands[0];
+  let bestSize=0;
+
+  for(const h of allHands){
+    const s=dist(h[0],h[9]);
+    if(s>bestSize){
+      bestSize=s;
+      best=h;
+    }
+  }
+
+  analyzeOneHand(best);
+}
+
+function analyzeOneHand(lm){
+  const wrist=lm[0],palmCenter=lm[9],index=lm[8];
+  const palmSize=dist(wrist,palmCenter);
+  const near=getDistanceScale(palmSize);
+
+  const core=classifyCoreGesture(lm);
+  const gesture=stableGesture(core.gesture,core.confidence);
+  lastRawGesture=gesture;
+
+  const ix=1-index.x;
+  const iy=index.y;
+
+  smoothX+=(ix-smoothX)*.46;
+  smoothY+=(iy-smoothY)*.46;
+
+  const dx=smoothX-lastFingerX;
+  const dy=smoothY-lastFingerY;
+  const speed=Math.hypot(dx,dy);
+
+  lastFingerX=smoothX;
+  lastFingerY=smoothY;
+
+  // 保留：根据手掌离镜头远近缩放
+  targetScale=.38+near*3.2;
+  targetZoom=THREE.MathUtils.clamp(1040-near*420,560,1100);
+
+  // 保留：简单旋转控制。
+  // 五指是“纯时停模式”：不再旋转，只允许手掌远近控制缩放。
+  if(gesture!=="idle" && gesture!=="fist" && gesture!=="fiveFinger"){
+    targetRotY+=dx*14.5;
+    targetRotX+=dy*11.2;
+  }
+
+  // 食指轨迹只在一指模式记录
+  if(gesture==="oneFinger"){
+    if(!oneFingerStartedAt) oneFingerStartedAt=Date.now();
+  }else{
+    oneFingerStartedAt=0;
+  }
+
+  if(gesture==="oneFinger" && Date.now()-oneFingerStartedAt>120){
+    const worldX=(smoothX-.5)*620;
+    const worldY=(.5-smoothY)*430;
+    pointerTrail.push({x:worldX,y:worldY,z:0,t:Date.now()});
+    if(pointerTrail.length>130) pointerTrail.shift();
+  }else{
+    pointerTrail=pointerTrail.slice(-18);
+  }
+
+  // 保留隐藏彩蛋：握拳后五指张开
+  if(gesture==="fist") fistArmed=true;
+
+  if(fistArmed && gesture==="fiveFinger"){
+    fistArmed=false;
+
+    const now=Date.now();
+    if(now-lastNovaComboAt>5000){
+      novaComboCount=0;
+    }
+
+    novaComboCount++;
+    lastNovaComboAt=now;
+
+    releaseSkill(
+      "超新星爆炸",
+      "握拳蓄力后五指张开：第 "+novaComboCount+"/3 次",
+      ()=>explode(1.45)
+    );
+
+    if(novaComboCount>=3){
+      setTimeout(triggerHeartEgg,650);
+    }
+
+    pointerTrail=[];
+    return;
+  }
+
+  // 食指画圈/画形
+  if(gesture==="oneFinger"){
+    const shape=detectTrailShape();
+    if(shape==="circle"){
+      releaseSkill("星环传送门","食指画圈：叠加星门特效",makePortalOverlay);
+      pointerTrail=[];
+      return;
+    }
+    if(shape==="heart"){
+      releaseSkill("轨迹造物：爱心","食指轨迹识别为爱心",()=>setShape("heart",false));
+      pointerTrail=[];
+      return;
+    }
+    if(shape==="s"){
+      releaseSkill("轨迹造物：螺旋星河","食指轨迹识别为 S",()=>setShape("galaxy",false));
+      pointerTrail=[];
+      return;
+    }
+  }
+
+  let label="";
+
+  if(selectedEffect==="auto"){
+    if(gesture==="pinch"){
+      focusPower=1-core.pinch;
+      collapsePower=Math.max(collapsePower,.68);
+      label="捏合：核心坍缩";
+    }else if(gesture==="oneFinger"){
+      label="一指：旋转 / 画圈星门";
+    }else if(gesture==="twoFinger"){
+      wavePower=Math.max(wavePower,.85);
+      if(speed>.045){
+        releaseSkill("双星分裂","双指：分裂特效，不改变形状",binaryStarOverlay);
+      }
+      label="二指：星波 / 分裂";
+    }else if(gesture==="threeFinger"){
+      wavePower=Math.max(wavePower,1.18);
+      swirlPower=Math.max(swirlPower,.42);
+      targetRotZ+=dx*4.8;
+      label="三指：三重星环震荡";
+    }else if(gesture==="fourFinger"){
+      portalPower=Math.max(portalPower,1.05);
+      swirlPower=Math.max(swirlPower,.62);
+      label="双手张开：星门 / 虫洞";
+    }else if(gesture==="fiveFinger"){
+      // 纯时停：冻结粒子物理和旋转控制；只保留 distance scale。
+      freezePower=Math.max(freezePower,.98);
+      swirlPower=0;
+      wavePower=0;
+      portalPower=0;
+      cutPower=0;
+      label="五指：纯时停，仅保留远近缩放";
+    }else if(gesture==="fist"){
+      label="握拳：蓄力，五指张开释放超新星";
+    }else{
+      label="待机：伸出 1/2/3/5 指、捏合，或双手张开";
+    }
+  }else{
+    if(gesture!=="idle" && gesture!=="fist"){
+      label="旋转控制 + 自选效果";
+    }else{
+      label="自选效果："+effectName(selectedEffect);
+    }
+  }
+
+  if(label!==lastGesture){
+    statusEl.textContent=label+" ｜ "+shapeName(currentShape)+" ｜ "+themeName(currentTheme);
+    lastGesture=label;
+  }
+
+  const s=core.scores||{};
+  hud.innerHTML=
+    "手势："+gestureName(gesture)+"<br>"+
+    "模式：简单指头数量<br>"+
+    "指分："+[
+      (s.index||0).toFixed(2),
+      (s.middle||0).toFixed(2),
+      (s.ring||0).toFixed(2),
+      (s.pinky||0).toFixed(2),
+      (s.thumb||0).toFixed(2)
+    ].join("/")+"<br>"+
+    "置信："+(recognitionDebug.confidence||0).toFixed(2)+"<br>"+
+    "缩放："+targetScale.toFixed(2);
+}
+function updateGame(){
+  if(!gameEnabled)return;
+  gameProgress=Math.min(100,gameProgress+(focusPower*.08+wavePower*.03+musicLevel*.025));
+  taskProgress.style.width=gameProgress+"%";
+  if(gameProgress>=100){
+    gameProgress=0;
+    releaseSkill("任务完成","星球孵化成功，形态进化",evolveShape);
+  }
+}
+
+function shapeName(s){
+  return {dust:"星尘",planet:"星球",saturn:"土星",galaxy:"银河",blackhole:"黑洞",nova:"超新星",dna:"DNA",heart:"爱心",flower:"花朵",phoenix:"凤凰",dragon:"龙形",text:"文字",starryNight:"梵高星空"}[s]||s;
+}
+function themeName(t){return {cyan:"青蓝",rainbow:"彩虹",purple:"紫粉",gold:"金色",fire:"烈焰",ice:"冰晶",green:"翡翠",redblue:"红蓝"}[t]||t;}
+function effectName(e){return {auto:"自动施法",freeze:"时停",swirl:"旋涡",wave:"星波",collapse:"坍缩",nova:"爆发",portal:"星门"}[e]||e;}
+function gestureName(g){return {idle:"待机",pinch:"捏合",oneFinger:"一指",twoFinger:"二指",threeFinger:"三指",fourFinger:"四指",fiveFinger:"五指",fist:"握拳"}[g]||g;}
+
+function unlockBirthdayReward(){
+  const input=document.getElementById("birthdayInput");
+  const modalInput=document.getElementById("birthdayInputModal");
+  const msg=document.getElementById("birthdayMsg");
+  const modalMsg=document.getElementById("birthdayMsgModal");
+
+  const raw=(modalInput&&modalInput.value) || (input&&input.value) || "";
+  const value=raw.replace(/\D/g,"");
+
+  if(input) input.value=value;
+  if(modalInput) modalInput.value=value;
+
+  if(value!=="20061118"){
+    if(msg) msg.textContent="答案不对，再想想。只输入数字。";
+    if(modalMsg) modalMsg.textContent="答案不对，再想想。提示：只输入 8 位数字。";
+    if(modalInput) modalInput.focus();
+    else if(input) input.focus();
+    return;
+  }
+
+  birthdayRewardUnlocked=true;
+  if(msg) msg.textContent="奖励已解锁：梵高星空烟花！";
+  if(modalMsg) modalMsg.textContent="奖励已解锁：梵高星空烟花！";
+
+  const modal=document.getElementById("birthdayModal");
+  if(modal) modal.classList.remove("show");
+
+  const banner=document.getElementById("rewardBanner");
+  if(banner){
+    banner.querySelector(".reward-main").textContent="梵高星空";
+    banner.querySelector(".reward-sub").textContent="FULLSCREEN FIREWORK UNLOCKED";
+    banner.classList.add("show");
+    setTimeout(()=>banner.classList.remove("show"),4200);
+  }
+
+  releaseSkill("生日奖励解锁","满屏烟花绽放，随后生成复杂梵高星空",()=>{
+    // 不在主界面添加/激活“梵高星空”按钮，只作为隐藏彩蛋形态出现。
+    fullScreenFireworkShow();
+
+    clearTimeout(landscapeFireworkTimer);
+    landscapeFireworkTimer=setTimeout(()=>{
+      setShape("starryNight",false);
+      targetScale=.98;
+      targetZoom=860;
+      particleSizeScale=Math.max(particleSizeScale,1.2);
+      glowStrength=Math.max(glowStrength,2.25);
+      starSharpness=Math.max(starSharpness,1.9);
+      lineStrength=Math.max(lineStrength,1.4);
+
+      if(sizeRange)sizeRange.value=particleSizeScale.toFixed(1);
+      if(glowRange)glowRange.value=glowStrength.toFixed(1);
+      if(sharpRange)sharpRange.value=starSharpness.toFixed(1);
+      if(lineRange)lineRange.value=lineStrength.toFixed(1);
+      if(refreshControls)refreshControls();
+
+      // 星空成形后再炸一次，形成二段烟花。
+      setTimeout(()=>{
+        starryNightParticleBurst();
+      },1800);
+    },1400);
+  });
+}
+function fullScreenFireworkShow(){
+  spawnRewardSparks(9,72);
+  screenShake=Math.max(screenShake,14);
+  flash=Math.max(flash,1.25);
+
+  // 连续多轮满屏烟花
+  setTimeout(()=>spawnRewardSparks(8,64),420);
+  setTimeout(()=>spawnRewardSparks(10,70),860);
+  setTimeout(()=>spawnRewardSparks(7,62),1320);
+
+  // 粒子本身也先炸开一次
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+    const power=5.5+Math.random()*10.5;
+    vel[i3]+=x/d*power+(Math.random()-.5)*4.5;
+    vel[i3+1]+=y/d*power+(Math.random()-.5)*4.5;
+    vel[i3+2]+=z/d*power+(Math.random()-.5)*4.5;
+
+    const hue=[.02,.09,.13,.55,.61,.72,.84][Math.floor(Math.random()*7)];
+    const c=new THREE.Color().setHSL(hue,1,.58+Math.random()*.34);
+    color[i3]=c.r;color[i3+1]=c.g;color[i3+2]=c.b;
+  }
+
+  geometry.attributes.color.needsUpdate=true;
+  wavePower=Math.max(wavePower,1.7);
+  swirlPower=Math.max(swirlPower,1.0);
+}
+
+function starryNightParticleBurst(){
+  spawnRewardSparks(6,58);
+
+  // 梵高星空自身以旋涡烟花向外炸开，随后回到星空。
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+    const tangential=8+Math.random()*8;
+    const radial=3+Math.random()*7;
+
+    vel[i3]+=x/d*radial + (-y/d)*tangential + (Math.random()-.5)*2;
+    vel[i3+1]+=y/d*radial + (x/d)*tangential + (Math.random()-.5)*2;
+    vel[i3+2]+=z/d*radial + (Math.random()-.5)*5;
+  }
+
+  wavePower=Math.max(wavePower,1.8);
+  swirlPower=Math.max(swirlPower,1.4);
+  screenShake=Math.max(screenShake,12);
+  flash=Math.max(flash,1.1);
+
+  setTimeout(()=>{
+    setShape("starryNight",false);
+    statusEl.textContent="复杂梵高星空烟花彩蛋完成 ｜ 作者：zuyao";
+  },3900);
+}
+
+function spawnRewardSparks(bursts=8, particlesPerBurst=66){
+  const colors=["#6be7ff","#5d7dff","#243bff","#ffcf6b","#fff6a6","#ff7ab8","#ffffff","#77ffcb"];
+
+  for(let b=0;b<bursts;b++){
+    const cx=12+Math.random()*76;
+    const cy=14+Math.random()*72;
+
+    const ring=document.createElement("div");
+    ring.className="fireworkRing";
+    ring.style.left=cx+"vw";
+    ring.style.top=cy+"vh";
+    ring.style.setProperty("--ringScale",String(7+Math.random()*18));
+    document.body.appendChild(ring);
+    setTimeout(()=>ring.remove(),1600);
+
+    for(let i=0;i<particlesPerBurst;i++){
+      const s=document.createElement("div");
+      s.className="screenFirework";
+      const col=colors[Math.floor(Math.random()*colors.length)];
+      s.style.color=col;
+      s.style.background=col;
+      s.style.left=cx+"vw";
+      s.style.top=cy+"vh";
+
+      const angle=(i/particlesPerBurst)*Math.PI*2 + (Math.random()-.5)*.24;
+      const dist=120+Math.random()*520;
+      s.style.setProperty("--dx",Math.cos(angle)*dist+"px");
+      s.style.setProperty("--dy",Math.sin(angle)*dist+"px");
+      s.style.setProperty("--dur",(1.15+Math.random()*1.25)+"s");
+
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),2600);
+    }
+  }
+}
+
+
+document.querySelectorAll("#shapePanel button").forEach(b=>{
+  b.onclick=()=>{
+    function unlockBirthdayReward(){
+  const input=document.getElementById("birthdayInput");
+  const msg=document.getElementById("birthdayMsg");
+  const value=(input&&input.value||"").replace(/\D/g,"");
+
+  if(value!=="20061118"){
+    if(msg) msg.textContent="答案不对，再想想。只输入数字。";
+    if(input){
+      input.value=value;
+      input.focus();
+    }
+    return;
+  }
+
+  birthdayRewardUnlocked=true;
+  if(msg) msg.textContent="奖励已解锁：星空烟花！";
+
+  const banner=document.getElementById("rewardBanner");
+  if(banner){
+    banner.classList.add("show");
+    setTimeout(()=>banner.classList.remove("show"),3600);
+  }
+
+  releaseSkill("生日奖励解锁","梵高星空粒子生成，烟花即将绽放",()=>{
+    currentTheme="cyan";
+    document.querySelectorAll("#shapePanel button").forEach(x=>x.classList.toggle("active",x.dataset.shape==="landscape"));
+    setShape("starryNight",false);
+    targetScale=.9;
+    targetZoom=900;
+    particleSizeScale=Math.max(particleSizeScale,1.15);
+    glowStrength=Math.max(glowStrength,1.8);
+    starSharpness=Math.max(starSharpness,1.5);
+    if(sizeRange)sizeRange.value=particleSizeScale.toFixed(1);
+    if(glowRange)glowRange.value=glowStrength.toFixed(1);
+    if(sharpRange)sharpRange.value=starSharpness.toFixed(1);
+    if(refreshControls)refreshControls();
+
+    clearTimeout(landscapeFireworkTimer);
+    landscapeFireworkTimer=setTimeout(()=>{
+      fullScreenFireworkShow();
+    },2600);
+  });
+}
+
+function fullScreenFireworkShow(){
+  spawnRewardSparks();
+
+  // 星空形态先向外烟花式绽放，再缓慢回到星空
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+    const power=4.5+Math.random()*8.5;
+    vel[i3]+=x/d*power+(Math.random()-.5)*2.5;
+    vel[i3+1]+=y/d*power+Math.random()*5.5;
+    vel[i3+2]+=z/d*power+(Math.random()-.5)*2.5;
+
+    // 烟花瞬间重新染色
+    const hue=[.02,.09,.14,.52,.62,.78,.88][Math.floor(Math.random()*7)];
+    const c=new THREE.Color().setHSL(hue,1,.58+Math.random()*.3);
+    color[i3]=c.r;color[i3+1]=c.g;color[i3+2]=c.b;
+  }
+
+  geometry.attributes.color.needsUpdate=true;
+  wavePower=Math.max(wavePower,1.5);
+  swirlPower=Math.max(swirlPower,.8);
+  screenShake=Math.max(screenShake,11);
+  flash=Math.max(flash,1.0);
+
+  setTimeout(()=>{
+    setShape("starryNight",false);
+    statusEl.textContent="星空烟花彩蛋完成 ｜ 作者：zuyao";
+  },3600);
+}
+
+function spawnRewardSparks(){
+  for(let i=0;i<72;i++){
+    const s=document.createElement("div");
+    s.className="rewardSpark";
+    const colors=["#6be7ff","#8b5cff","#ffcf6b","#ff6fb7","#ffffff","#7cffb2"];
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    s.style.color=col;
+    s.style.background=col;
+    s.style.left=(50+(Math.random()-.5)*18)+"vw";
+    s.style.top=(50+(Math.random()-.5)*14)+"vh";
+    const angle=Math.random()*Math.PI*2;
+    const dist=160+Math.random()*420;
+    s.style.setProperty("--dx",Math.cos(angle)*dist+"px");
+    s.style.setProperty("--dy",Math.sin(angle)*dist+"px");
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1900);
+  }
+}
+
+
+document.querySelectorAll("#shapePanel button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    setShape(b.dataset.shape,false);
+  };
+});
+
+document.querySelectorAll("#themePanel button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#themePanel button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    currentTheme=b.dataset.theme;
+    setShape(currentShape,false);
+  };
+});
+
+document.querySelectorAll("#effectPanel button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#effectPanel button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    selectedEffect=b.dataset.effect;
+    statusEl.textContent="效果模式："+effectName(selectedEffect);
+  };
+});
+
+function refreshControls(){
+  activeCount=parseInt(countRange.value);
+  particleSizeScale=parseFloat(sizeRange.value);
+  glowStrength=parseFloat(glowRange.value);
+  physicsStrength=parseFloat(physicsRange.value);
+  lineStrength=parseFloat(lineRange.value);
+  trailAlpha=parseFloat(trailRange.value);
+  qualityMode=parseInt(qualityRange.value);
+
+  geometry.setDrawRange(0,activeCount);
+
+  if(qualityMode===1){renderer.setPixelRatio(1);qualityVal.textContent="流畅";}
+  else if(qualityMode===2){renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));qualityVal.textContent="高";}
+  else{renderer.setPixelRatio(Math.min(devicePixelRatio,2));qualityVal.textContent="极致";}
+
+  renderer.setSize(innerWidth,innerHeight);
+
+  countVal.textContent=activeCount;
+  sizeVal.textContent=particleSizeScale.toFixed(1);
+  glowVal.textContent=glowStrength.toFixed(1);
+  physicsVal.textContent=physicsStrength.toFixed(1);
+  lineVal.textContent=lineStrength.toFixed(1);
+  trailVal.textContent=trailAlpha.toFixed(2);
+  renderScaleVal.textContent=renderScale.toFixed(1);
+  sharpVal.textContent=starSharpness.toFixed(1);
+  lineDensityVal.textContent=lineDensity.toFixed(1);
+}
+[countRange,sizeRange,glowRange,physicsRange,lineRange,trailRange,qualityRange,renderScaleRange,sharpRange,lineDensityRange].forEach(i=>i.addEventListener("input",refreshControls));
+refreshControls();
+
+function smoothHands(rawHands){
+  if(!rawHands || !rawHands.length){
+    smoothedHands=[];
+    return [];
+  }
+
+  const result=[];
+
+  for(let h=0;h<rawHands.length;h++){
+    const raw=rawHands[h];
+
+    if(!smoothedHands[h] || smoothedHands[h].length!==raw.length){
+      smoothedHands[h]=raw.map(p=>({x:p.x,y:p.y,z:p.z||0}));
+    }else{
+      for(let i=0;i<raw.length;i++){
+        smoothedHands[h][i].x=smoothedHands[h][i].x*landmarkSmoothAlpha+raw[i].x*(1-landmarkSmoothAlpha);
+        smoothedHands[h][i].y=smoothedHands[h][i].y*landmarkSmoothAlpha+raw[i].y*(1-landmarkSmoothAlpha);
+        smoothedHands[h][i].z=(smoothedHands[h][i].z||0)*landmarkSmoothAlpha+(raw[i].z||0)*(1-landmarkSmoothAlpha);
+      }
+    }
+
+    result.push(smoothedHands[h].map(p=>({x:p.x,y:p.y,z:p.z})));
+  }
+
+  smoothedHands=smoothedHands.slice(0,rawHands.length);
+  lastRecognizedHands=result;
+  return result;
+}
+
+async function startCamera(){
+  intro.classList.add("hidden");
+  statusEl.textContent="正在请求摄像头权限……";
+
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},
+      audio:false
+    });
+
+    video.srcObject=stream;
+    await video.play();
+    statusEl.textContent="摄像头已开启：单手稳定施法：仅识别简单指头数量";
+
+    const hands=new Hands({locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+    hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:.66,minTrackingConfidence:.82});
+
+    hands.onResults(res=>{
+      if(res.multiHandLandmarks&&res.multiHandLandmarks.length){
+        analyzeHands(smoothHands(res.multiHandLandmarks));
+      }else{
+        statusEl.textContent="未识别到手 ｜ "+shapeName(currentShape)+" ｜ "+themeName(currentTheme);
+      }
+    });
+
+    const cam=new Camera(video,{onFrame:async()=>await hands.send({image:video}),width:1280,height:720});
+    cam.start();
+  }catch(e){
+    statusEl.textContent="摄像头失败：仍可触控操作";
+    console.error(e);
+  }
+}
+
+function startNoCamera(){
+  intro.classList.add("hidden");
+  statusEl.textContent="触控模式：滑动旋转，点击爆发 ｜ 作者：zuyao";
+}
+
+async function startMusic(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    const ctx=new AudioCtx();
+    const src=ctx.createMediaStreamSource(stream);
+    analyser=ctx.createAnalyser();
+    analyser.fftSize=128;
+    audioData=new Uint8Array(analyser.frequencyBinCount);
+    src.connect(analyser);
+    document.getElementById("musicBtn").classList.add("active");
+    statusEl.textContent="音乐响应已开启：低音爆发，高频闪烁，音量扩张";
+  }catch(e){
+    statusEl.textContent="麦克风权限失败，音乐响应未开启";
+  }
+}
+
+function evolveShape(){
+  const idx=shapeOrder.indexOf(currentShape);
+  const next=shapeOrder[(idx+1+shapeOrder.length)%shapeOrder.length];
+  function unlockBirthdayReward(){
+  const input=document.getElementById("birthdayInput");
+  const msg=document.getElementById("birthdayMsg");
+  const value=(input&&input.value||"").replace(/\D/g,"");
+
+  if(value!=="20061118"){
+    if(msg) msg.textContent="答案不对，再想想。只输入数字。";
+    if(input){
+      input.value=value;
+      input.focus();
+    }
+    return;
+  }
+
+  birthdayRewardUnlocked=true;
+  if(msg) msg.textContent="奖励已解锁：星空烟花！";
+
+  const banner=document.getElementById("rewardBanner");
+  if(banner){
+    banner.classList.add("show");
+    setTimeout(()=>banner.classList.remove("show"),3600);
+  }
+
+  releaseSkill("生日奖励解锁","梵高星空粒子生成，烟花即将绽放",()=>{
+    currentTheme="cyan";
+    document.querySelectorAll("#shapePanel button").forEach(x=>x.classList.toggle("active",x.dataset.shape==="landscape"));
+    setShape("starryNight",false);
+    targetScale=.9;
+    targetZoom=900;
+    particleSizeScale=Math.max(particleSizeScale,1.15);
+    glowStrength=Math.max(glowStrength,1.8);
+    starSharpness=Math.max(starSharpness,1.5);
+    if(sizeRange)sizeRange.value=particleSizeScale.toFixed(1);
+    if(glowRange)glowRange.value=glowStrength.toFixed(1);
+    if(sharpRange)sharpRange.value=starSharpness.toFixed(1);
+    if(refreshControls)refreshControls();
+
+    clearTimeout(landscapeFireworkTimer);
+    landscapeFireworkTimer=setTimeout(()=>{
+      fullScreenFireworkShow();
+    },2600);
+  });
+}
+
+function fullScreenFireworkShow(){
+  spawnRewardSparks();
+
+  // 星空形态先向外烟花式绽放，再缓慢回到星空
+  for(let i=0;i<activeCount;i++){
+    const i3=i*3;
+    const x=pos[i3],y=pos[i3+1],z=pos[i3+2];
+    const d=Math.sqrt(x*x+y*y+z*z)||1;
+    const power=4.5+Math.random()*8.5;
+    vel[i3]+=x/d*power+(Math.random()-.5)*2.5;
+    vel[i3+1]+=y/d*power+Math.random()*5.5;
+    vel[i3+2]+=z/d*power+(Math.random()-.5)*2.5;
+
+    // 烟花瞬间重新染色
+    const hue=[.02,.09,.14,.52,.62,.78,.88][Math.floor(Math.random()*7)];
+    const c=new THREE.Color().setHSL(hue,1,.58+Math.random()*.3);
+    color[i3]=c.r;color[i3+1]=c.g;color[i3+2]=c.b;
+  }
+
+  geometry.attributes.color.needsUpdate=true;
+  wavePower=Math.max(wavePower,1.5);
+  swirlPower=Math.max(swirlPower,.8);
+  screenShake=Math.max(screenShake,11);
+  flash=Math.max(flash,1.0);
+
+  setTimeout(()=>{
+    setShape("starryNight",false);
+    statusEl.textContent="星空烟花彩蛋完成 ｜ 作者：zuyao";
+  },3600);
+}
+
+function spawnRewardSparks(){
+  for(let i=0;i<72;i++){
+    const s=document.createElement("div");
+    s.className="rewardSpark";
+    const colors=["#6be7ff","#8b5cff","#ffcf6b","#ff6fb7","#ffffff","#7cffb2"];
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    s.style.color=col;
+    s.style.background=col;
+    s.style.left=(50+(Math.random()-.5)*18)+"vw";
+    s.style.top=(50+(Math.random()-.5)*14)+"vh";
+    const angle=Math.random()*Math.PI*2;
+    const dist=160+Math.random()*420;
+    s.style.setProperty("--dx",Math.cos(angle)*dist+"px");
+    s.style.setProperty("--dy",Math.sin(angle)*dist+"px");
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1900);
+  }
+}
+
+
+document.querySelectorAll("#shapePanel button").forEach(x=>x.classList.toggle("active",x.dataset.shape===next));
+  setShape(next,false);
+  wavePower=1.1;
+}
+
+function takeShot(){
+  const a=document.createElement("a");
+  a.download="palm-universe-pro-spell.png";
+  a.href=renderer.domElement.toDataURL("image/png");
+  a.click();
+}
+
+function toggleFullscreen(){
+  document.body.classList.toggle("immersive");
+  statusEl.textContent=document.body.classList.contains("immersive")?"沉浸模式：右上角可退出":"已退出沉浸模式";
+  if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }else if(document.exitFullscreen){
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+
+document.getElementById("startCamera").onclick=startCamera;
+document.getElementById("startNoCamera").onclick=startNoCamera;
+document.getElementById("musicBtn").onclick=startMusic;
+document.getElementById("evolveBtn").onclick=evolveShape;
+document.getElementById("shotBtn").onclick=takeShot;
+document.getElementById("fullBtn").onclick=toggleFullscreen;
+document.getElementById("exitImmersive").onclick=()=>{
+  document.body.classList.remove("immersive");
+  if(document.fullscreenElement&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}
+};
+document.addEventListener("fullscreenchange",()=>{
+  if(!document.fullscreenElement){document.body.classList.remove("immersive");}
+});
+document.getElementById("guideBtn").onclick=()=>document.getElementById("guideModal").classList.remove("hidden");
+document.getElementById("calibrateBtn").onclick=()=>{
+  stableGestureState="idle";
+  stableCandidate="idle";
+  pendingFrames=0;
+  gestureLockedUntil=0;
+  palmMin=999;
+  palmMax=0;
+  palmSmooth=0;
+  pointerTrail=[];
+  smoothedHands=[];
+  lastRecognizedHands=[];
+  fistArmed=false;
+  novaComboCount=0;
+  lastNovaComboAt=0;
+  if(gestureLock)gestureLock.textContent="锁定手势：待机";
+  statusEl.textContent="识别已校准：请重新摆出手势";
+};
+document.getElementById("closeGuide").onclick=()=>document.getElementById("guideModal").classList.add("hidden");
+
+document.getElementById("lineBtn").onclick=()=>{
+  if(connectionMode==="stars"){connectionMode="constellation";lineStrength=1;document.getElementById("lineBtn").textContent="星座线";}
+  else if(connectionMode==="constellation"){connectionMode="energy";lineStrength=1.5;document.getElementById("lineBtn").textContent="能量网";}
+  else{connectionMode="stars";lineStrength=0;document.getElementById("lineBtn").textContent="星辰";}
+  document.getElementById("lineBtn").classList.toggle("active",connectionMode!=="stars");
+};
+document.getElementById("gameBtn").onclick=()=>{
+  gameEnabled=!gameEnabled;
+  document.getElementById("gameBtn").classList.toggle("active",gameEnabled);
+  statusEl.textContent=gameEnabled?"任务玩法已开启：星球孵化":"任务玩法已关闭";
+};
+
+const birthdayBtn=document.getElementById("birthdayBtn");
+const birthdayInput=document.getElementById("birthdayInput");
+if(birthdayBtn){
+  birthdayBtn.onclick=unlockBirthdayReward;
+}
+if(birthdayInput){
+  birthdayInput.addEventListener("input",()=>{
+    birthdayInput.value=birthdayInput.value.replace(/\D/g,"").slice(0,8);
+  });
+  birthdayInput.addEventListener("keydown",e=>{
+    if(e.key==="Enter")unlockBirthdayReward();
+  });
+}
+
+
+
+
+function generateCustomTextParticles(sourceValue){
+  const oldInput=document.getElementById("customText");
+  const modalInput=document.getElementById("customTextModal");
+  const modal=document.getElementById("textModal");
+  const msg=document.getElementById("textMsgModal");
+
+  const value=(sourceValue || (modalInput&&modalInput.value) || (oldInput&&oldInput.value) || "星辰").trim().slice(0,12) || "星辰";
+
+  if(oldInput) oldInput.value=value;
+  if(modalInput) modalInput.value=value;
+
+  textParticleKey="";
+  rebuildTextParticleCache();
+
+  document.querySelectorAll("#shapePanel button").forEach(x=>x.classList.toggle("active",x.dataset.shape==="text"));
+  setShape("text",false);
+
+  targetScale=.82;
+  targetZoom=920;
+  particleSizeScale=Math.max(particleSizeScale,1.15);
+  if(sizeRange) sizeRange.value=particleSizeScale.toFixed(1);
+  if(refreshControls) refreshControls();
+
+  if(msg) msg.textContent="已生成文字粒子："+value;
+  if(modal) modal.classList.remove("show");
+
+  statusEl.textContent="文字粒子已生成："+value+" ｜ 作者：zuyao";
+}
+
+
+const textOpenBtn=document.getElementById("textOpenBtn");
+const textModal=document.getElementById("textModal");
+const customTextModal=document.getElementById("customTextModal");
+const textSubmitModal=document.getElementById("textSubmitModal");
+const textCloseModal=document.getElementById("textCloseModal");
+
+if(textOpenBtn){
+  textOpenBtn.onclick=()=>{
+    const oldInput=document.getElementById("customText");
+    if(customTextModal && oldInput) customTextModal.value=oldInput.value || "星辰";
+    if(textModal) textModal.classList.add("show");
+    setTimeout(()=>customTextModal&&customTextModal.focus(),80);
+  };
+}
+if(textSubmitModal){
+  textSubmitModal.onclick=()=>generateCustomTextParticles();
+}
+if(textCloseModal){
+  textCloseModal.onclick=()=>textModal&&textModal.classList.remove("show");
+}
+if(customTextModal){
+  customTextModal.addEventListener("keydown",e=>{
+    if(e.key==="Enter")generateCustomTextParticles();
+    if(e.key==="Escape"&&textModal)textModal.classList.remove("show");
+  });
+}
+if(textModal){
+  textModal.addEventListener("click",e=>{
+    if(e.target===textModal)textModal.classList.remove("show");
+  });
+}
+
+const birthdayOpenBtn=document.getElementById("birthdayOpenBtn");
+const birthdayModal=document.getElementById("birthdayModal");
+const birthdaySubmitModal=document.getElementById("birthdaySubmitModal");
+const birthdayCloseModal=document.getElementById("birthdayCloseModal");
+const birthdayInputModal=document.getElementById("birthdayInputModal");
+
+if(birthdayOpenBtn){
+  birthdayOpenBtn.onclick=()=>{
+    if(birthdayModal) birthdayModal.classList.add("show");
+    setTimeout(()=>birthdayInputModal&&birthdayInputModal.focus(),80);
+  };
+}
+if(birthdayCloseModal){
+  birthdayCloseModal.onclick=()=>birthdayModal&&birthdayModal.classList.remove("show");
+}
+if(birthdaySubmitModal){
+  birthdaySubmitModal.onclick=unlockBirthdayReward;
+}
+if(birthdayInputModal){
+  birthdayInputModal.addEventListener("input",()=>{
+    birthdayInputModal.value=birthdayInputModal.value.replace(/\D/g,"").slice(0,8);
+  });
+  birthdayInputModal.addEventListener("keydown",e=>{
+    if(e.key==="Enter")unlockBirthdayReward();
+    if(e.key==="Escape"&&birthdayModal)birthdayModal.classList.remove("show");
+  });
+}
+if(birthdayModal){
+  birthdayModal.addEventListener("click",e=>{
+    if(e.target===birthdayModal)birthdayModal.classList.remove("show");
+  });
+}
+
+document.getElementById("applyText").onclick=()=>generateCustomTextParticles();
+
+
+
+function setupSectionCollapses(){
+  if(document.body.dataset.sectionCollapseReady==="1") return;
+  document.body.dataset.sectionCollapseReady="1";
+
+  const sectionConfigs=[
+    {id:"tools", title:"工具", key:"tools", defaultCollapsed:false},
+    {id:"settings", title:"参数设置", key:"settings", defaultCollapsed:true},
+    {id:"hud", title:"识别状态", key:"hud", defaultCollapsed:true}
+  ];
+
+  const panelConfigs=[
+    {id:"effectPanel", title:"特效模式", key:"effects", defaultCollapsed:true},
+    {id:"themePanel", title:"颜色主题", key:"themes", defaultCollapsed:true},
+    {id:"shapePanel", title:"形态选择", key:"shapes", defaultCollapsed:false}
+  ];
+
+  function wrapElement(el,title,key,defaultCollapsed){
+    if(!el || el.dataset.sectionWrapped==="1") return;
+
+    el.dataset.sectionWrapped="1";
+    el.dataset.sectionKey=key;
+    el.classList.add("ui-section");
+
+    const header=document.createElement("button");
+    header.type="button";
+    header.className="ui-section-header";
+    header.innerHTML=`${title}<span></span>`;
+
+    const content=document.createElement("div");
+    content.className="ui-section-content";
+
+    while(el.firstChild){
+      content.appendChild(el.firstChild);
+    }
+
+    el.appendChild(header);
+    el.appendChild(content);
+
+    if(defaultCollapsed){
+      el.classList.add("collapsed");
+    }
+
+    header.onclick=(e)=>{
+      e.stopPropagation();
+      el.classList.toggle("collapsed");
+      refreshMiniRow();
+    };
+  }
+
+  sectionConfigs.forEach(cfg=>{
+    wrapElement(document.getElementById(cfg.id),cfg.title,cfg.key,cfg.defaultCollapsed);
+  });
+
+  panelConfigs.forEach(cfg=>{
+    const panel=document.getElementById(cfg.id);
+    if(!panel || panel.closest(".ui-section")) return;
+
+    const wrapper=document.createElement("div");
+    wrapper.className="ui-section";
+    wrapper.dataset.sectionKey=cfg.key;
+
+    const header=document.createElement("button");
+    header.type="button";
+    header.className="ui-section-header";
+    header.innerHTML=`${cfg.title}<span></span>`;
+
+    const content=document.createElement("div");
+    content.className="ui-section-content";
+
+    panel.parentNode.insertBefore(wrapper,panel);
+    wrapper.appendChild(header);
+    wrapper.appendChild(content);
+    content.appendChild(panel);
+
+    if(cfg.defaultCollapsed){
+      wrapper.classList.add("collapsed");
+    }
+
+    header.onclick=(e)=>{
+      e.stopPropagation();
+      wrapper.classList.toggle("collapsed");
+      refreshMiniRow();
+    };
+  });
+
+  refreshMiniRow();
+}
+
+function refreshMiniRow(){
+  const row=document.getElementById("uiMiniRow");
+  if(!row) return;
+
+  row.innerHTML="";
+
+  const labels={
+    tools:"工具",
+    settings:"参数",
+    hud:"状态",
+    effects:"特效",
+    themes:"颜色",
+    shapes:"形态"
+  };
+
+  document.querySelectorAll(".ui-section[data-section-key]").forEach(sec=>{
+    const key=sec.dataset.sectionKey;
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.textContent=(sec.classList.contains("collapsed")?"展开":"收起")+labels[key];
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      sec.classList.toggle("collapsed");
+      refreshMiniRow();
+    };
+    row.appendChild(btn);
+  });
+}
+
+function collapseAllSections(){
+  setupSectionCollapses();
+  document.querySelectorAll(".ui-section[data-section-key]").forEach(sec=>sec.classList.add("collapsed"));
+  refreshMiniRow();
+}
+
+function expandCoreSections(){
+  setupSectionCollapses();
+  document.querySelectorAll(".ui-section[data-section-key]").forEach(sec=>{
+    const key=sec.dataset.sectionKey;
+    if(key==="tools" || key==="shapes"){
+      sec.classList.remove("collapsed");
+    }else{
+      sec.classList.add("collapsed");
+    }
+  });
+  refreshMiniRow();
+}
+
+function setMobileUIExpanded(expanded){
+  if(expanded){
+    document.body.classList.add("mobile-ui-expanded");
+    document.body.classList.remove("mobile-ui-collapsed");
+    setupSectionCollapses();
+    expandCoreSections();
+    const btn=document.getElementById("uiToggle");
+    if(btn) btn.textContent="收起控制面板";
+  }else{
+    document.body.classList.remove("mobile-ui-expanded");
+    document.body.classList.add("mobile-ui-collapsed");
+    collapseAllSections();
+    const btn=document.getElementById("uiToggle");
+    if(btn) btn.textContent="展开控制面板";
+  }
+}
+
+const uiToggle=document.getElementById("uiToggle");
+const uiCollapseMask=document.getElementById("uiCollapseMask");
+
+if(uiToggle){
+  uiToggle.onclick=()=>{
+    setMobileUIExpanded(!document.body.classList.contains("mobile-ui-expanded"));
+  };
+}
+
+if(uiCollapseMask){
+  uiCollapseMask.onclick=()=>setMobileUIExpanded(false);
+}
+
+// 手机端默认收起，桌面端保持原始展开布局。
+function syncMobileUIState(){
+  if(window.innerWidth<=760){
+    if(!document.body.classList.contains("mobile-ui-expanded")){
+      setMobileUIExpanded(false);
+    }
+  }else{
+    document.body.classList.remove("mobile-ui-expanded","mobile-ui-collapsed");
+  }
+}
+syncMobileUIState();
+window.addEventListener("resize",syncMobileUIState);
+
+window.addEventListener("touchmove",e=>{
+  const t=e.touches[0];
+  targetRotY+=(t.clientX/innerWidth-.5)*.3;
+  targetRotX+=(t.clientY/innerHeight-.5)*.22;
+},{passive:true});
+
+window.addEventListener("pointermove",e=>{
+  if(e.pointerType==="touch")return;
+  targetRotY+=(e.clientX/innerWidth-.5)*.015;
+  targetRotX+=(e.clientY/innerHeight-.5)*.012;
+});
+
+window.addEventListener("click",e=>{
+  if(e.target.closest("button")||e.target.closest("#settings")||e.target.closest(".panel")||e.target.closest("#intro")||e.target.closest("#uiToggle")||e.target.closest("#uiCollapseMask")||e.target.closest("#textBox")||e.target.closest("#textModal")||e.target.closest("#birthdayModal")||e.target.closest("#birthdayBox"))return;
+  explode(1);
+});
+
+window.addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  rtA.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
